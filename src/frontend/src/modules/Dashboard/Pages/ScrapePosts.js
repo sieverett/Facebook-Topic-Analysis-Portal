@@ -9,7 +9,7 @@ class ScrapePosts extends Component {
   render() {
     return (
       <section>
-        <DateRangeForm action="Scrape" onSubmit={this.handleScrapeSubmit} />
+        <DateRangeForm action="Scrape" lowerName="Since" upperName="Until" onSubmit={this.handleScrapeSubmit} />
         <PostScrapeHistory />
       </section>
     );

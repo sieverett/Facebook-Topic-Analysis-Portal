@@ -7,7 +7,7 @@ namespace FacebookCivicInsights.Data
         public long TotalCount { get; set; }
         public long NumberOfPages => (TotalCount - 1) / PageSize + 1;
 
-        internal IDataRepository<T> Repository { get; set; }
+        internal ElasticSearchRepository<T> Repository { get; set; }
         internal Ordering<T> Ordering { get; set; }
 
         public override PagedResponse<T> PreviousPage()

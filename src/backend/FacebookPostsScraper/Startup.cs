@@ -44,10 +44,10 @@ namespace FacebookCivicInsights
             string elasticSearchUrl = Configuration["elasticsearch:url"];
             string elasticSearchDefaultIndex = Configuration["elasticsearch:defaultIndex"];
             var postRepository = new ElasticSearchRepository<ScrapedPost>(elasticSearchUrl, elasticSearchDefaultIndex + "-post");
-            services.AddSingleton<IDataRepository<ScrapedPost>>(postRepository);
+            services.AddSingleton(postRepository);
 
             var pageRepository = new ElasticSearchRepository<ScrapedPage>(elasticSearchUrl, elasticSearchDefaultIndex + "-page");
-            services.AddSingleton<IDataRepository<ScrapedPage>>(pageRepository);
+            services.AddSingleton(pageRepository);
 
             string facebookGraphAPIVersion = Configuration["facebook:graphAPIVersion"];
             string facebookAppId = Configuration["facebook:appId"];
@@ -56,10 +56,10 @@ namespace FacebookCivicInsights
             services.AddSingleton(graphClient);
 
             var postScrapeRepository = new ElasticSearchRepository<PostScrapeEvent>(elasticSearchUrl, elasticSearchDefaultIndex + "-post-event");
-            services.AddSingleton<IDataRepository<PostScrapeEvent>>(postScrapeRepository);
+            services.AddSingleton(postScrapeRepository);
 
             var pageScrapeRepository = new ElasticSearchRepository<PageScrapeEvent>(elasticSearchUrl, elasticSearchDefaultIndex + "-page-event");
-            services.AddSingleton<IDataRepository<PageScrapeEvent>>(pageScrapeRepository);
+            services.AddSingleton(pageScrapeRepository);
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)

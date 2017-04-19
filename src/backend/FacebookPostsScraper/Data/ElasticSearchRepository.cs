@@ -3,10 +3,11 @@ using Facebook;
 using Nest;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 
 namespace FacebookCivicInsights.Data
 {
-    public class ElasticSearchRepository<T> : IDataRepository<T> where T: class, new()
+    public class ElasticSearchRepository<T> where T: class, new()
     {
         private ElasticClient Client { get; }
 
@@ -35,7 +36,7 @@ namespace FacebookCivicInsights.Data
         private const int DefaultPageSize = 50;
         private const int MaxPageSize = 10000;
 
-        public PagedResponse<T> Paged(PagedResponse paging, Ordering<T> ordering, Search<T> search)
+        public PagedResponse<T> Paged(PagedResponse paging = null, Ordering<T> ordering = null, Func<QueryContainerDescriptor<T>, QueryContainer> search = null)
         {
             // If the page number was invalid, use the default page number.
             int pageNumber = DefaultPageNumber;
@@ -88,7 +89,7 @@ namespace FacebookCivicInsights.Data
                 // The user can specify a search query to filter data.
                 if (search != null)
                 {
-                    s = s.Query(q => q.Term(search.Field, search.Value));
+                    s = s.Query(search);
                 }
 
                 return s;
@@ -108,6 +109,33 @@ namespace FacebookCivicInsights.Data
 
             Client.Delete<T>(id);
             return deletedDocument;
+        }
+    }
+
+    public static class ElasticSearchRepositoryExtensions
+    {
+        public static PagedResponse<T> All<T>(this ElasticSearchRepository<T> repository,
+                                              int pageNumber, int pageSize,
+                                              Expression<Func<T, object>> orderPath, OrderingType? order,
+                                              Expression<Func<T, object>> searchPath, DateTime? since, DateTime? until) where T : class, new()
+        {
+            var paging = new PagedResponse { PageNumber = pageNumber, PageSize = pageSize };
+            var ordering = new Ordering<T>
+            {
+                Order = order ?? OrderingType.Descending,
+                Path = orderPath
+            };
+
+            Func<QueryContainerDescriptor<T>, QueryContainer> search = query =>
+            {
+                return query.DateRange(d =>
+                {
+                    return d.Field(searchPath).GreaterThanOrEquals(since ?? DateTime.MinValue)
+                                              .LessThanOrEquals(until ?? DateTime.MaxValue);
+                });
+            };
+
+            return repository.Paged(paging, ordering, search);
         }
     }
 }

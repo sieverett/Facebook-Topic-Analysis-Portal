@@ -4,7 +4,7 @@ import DateDropdown from './DateDropdown';
 import Modal from './Modal';
 
 class DateRangeForm extends Component {
-  state = {since: '', until: ''}
+  state = {allowEmpty: false, since: '', until: ''}
 
   handleSinceChange = (event) => this.setState({since: moment(event.target.value).toDate(), began: true});
   handleUntilChange = (event) => this.setState({until: moment(event.target.value).toDate(), began: true});
@@ -26,7 +26,7 @@ class DateRangeForm extends Component {
       if (this.state.until > new Date()) {
         errorMessage.push(<p key='until-greater-than-now'>Until cannot refer to a point in the future.</p>);
       }
-    } else {
+    } else if (!this.props.allowEmpty) {
       if (!this.state.since) {
         errorMessage.push(<p key='no-since'>Since has no value.</p>);
       }
@@ -49,16 +49,22 @@ class DateRangeForm extends Component {
     if (!this.state.began) {
       return true;
     }
+    if (!this.state.since) {
+      return this.props.allowEmpty;
+    }
 
-    return this.state.since && (!this.state.until || this.state.since < this.state.until) && this.state.since <= new Date();
+    return (!this.state.until || this.state.since < this.state.until) && this.state.since <= new Date();
   }
 
   untilIsValid = () => {
     if (!this.state.began) {
       return true;
     }
+    if (!this.state.until) {
+      return this.props.allowEmpty;
+    }
 
-    return this.state.until && (!this.state.since || this.state.since < this.state.until) && this.state.until <= new Date();
+    return (!this.state.since || this.state.since < this.state.until) && this.state.until <= new Date();
   }
 
   formatDate = (date) => {
@@ -72,11 +78,11 @@ class DateRangeForm extends Component {
 
   render() {
     return (
-      <div className="row sub-header">
+      <div className="sub-header">
         <form onSubmit={this.handleSubmit}>
           <div className="btn-group btn-group-justified" role="group" aria-label="Justified button group with nested dropdown">
-            <DateDropdown title="Since" onUserInput={this.updateSince} />
-            <DateDropdown title="Until" onUserInput={this.updateUntil} />
+            <DateDropdown title={this.props.lowerName} onUserInput={this.updateSince} />
+            <DateDropdown title={this.props.upperName} onUserInput={this.updateUntil} />
             <div className="btn-group" role="group">
               <input type="submit" className="btn btn-primary btn-lg" value={this.props.action} />
             </div>
@@ -84,11 +90,11 @@ class DateRangeForm extends Component {
 
           <div className="form-inline" style={{"marginTop": "20px", "marginBottom": "10px"}}>
             <div className={'form-group ' + (this.sinceIsValid() ? '' : 'has-error')}>
-              <label htmlFor="since-input" style={{"margin": "0 10px"}}>Since</label>
+              <label htmlFor="since-input" style={{"margin": "0 10px"}}>{this.props.lowerName}</label>
               <input value={this.formatDate(this.state.since)} onChange={this.handleSinceChange} className="form-control" type="datetime-local" name="since" />
             </div>
             <div className={'form-group ' + (this.untilIsValid() ? '' : 'has-error')}>
-              <label htmlFor="until-input" style={{"marginLeft": "10px", "marginRight": "10px"}}>Until</label>
+              <label htmlFor="until-input" style={{"marginLeft": "10px", "marginRight": "10px"}}>{this.props.upperName}</label>
               <input value={this.formatDate(this.state.until)} onChange={this.handleUntilChange} className="form-control" type="datetime-local" name="until" />
             </div>
           </div>

@@ -3,19 +3,24 @@ import Moment from 'react-moment';
 import { getPosts } from '../Common/Data/Actions';
 import DataTable from '../Components/Common/Data/DataTable';
 import ErrorPanel from '../Components/Common/ErrorPanel';
-import LoadingIndicator from '../Components/Common/LoadingIndicator'
+import LoadingIndicator from '../Components/Common/LoadingIndicator';
+import DateRangeForm from '../Components/Common/DateRangeForm';
 
 class Browse extends Component {
   componentWillMount() {
     // Load the up-to-date list of posts each time the page is refreshed or loaded.
-    const pageNumber = this.context.store.getState().posts.pageNumber;
-    const pageSize = this.context.store.getState().posts.pageSize;
+    const { pageNumber, pageSize } = this.context.store.getState().posts;
     this.handlePaginationChanged(pageNumber, pageSize);
   }
 
   handlePaginationChanged = (pageNumber, pageSize) => this.context.store.dispatch(getPosts(pageNumber, pageSize));
 
   handleRowSelection = (data, index) => window.location.href += '/' + data.id;
+
+  handleBrowse = (since, until) => {
+    const { pageNumber, pageSize } = this.context.store.getState().posts;
+    this.context.store.dispatch(getPosts(pageNumber, pageSize, since, until));
+  }
 
   render() {
     const { posts, errorMessage } = this.context.store.getState();
@@ -28,7 +33,7 @@ class Browse extends Component {
       { name: 'Reactions',    key: path => path.reactions.summary.total_count                             },
       { name: 'Shares',       key: path => path.shares ? path.shares.count : 0                            },
       { name: 'Status Type',  key: path => path.status_type                                               },
-      { name: 'Permalink',    key: path => <a href={path.permalink_url}>{path.permalink_url}</a>          }
+      { name: 'Permalink',    key: path => <a href={path.permalink_url}>Facebook</a>          }
     ];
 
     if (errorMessage) {
@@ -40,6 +45,7 @@ class Browse extends Component {
     return (
       <section>
         <h1 className="page-header">Browse Posts</h1>
+        <DateRangeForm action="Browse" lowerName="From" upperName="To" allowEmpty={true} onSubmit={this.handleBrowse} />
         <DataTable mapping={mapping} data={posts.data} pagination={posts}
                    onRowSelected={this.handleRowSelection} onPaginationChanged={this.handlePaginationChanged} />
       </section>

@@ -14,13 +14,13 @@ namespace FacebookCivicInsights.Controllers.Dashboard
     public class PageScrapeController : Controller
     {
         private GraphClient GraphClient { get; }
-        private IDataRepository<ScrapedPage> PageRepository { get; }
-        private IDataRepository<PageScrapeEvent> PageScrapeRepository { get; }
+        private ElasticSearchRepository<ScrapedPage> PageRepository { get; }
+        private ElasticSearchRepository<PageScrapeEvent> PageScrapeRepository { get; }
 
         public PageScrapeController(
             GraphClient graphClient,
-            IDataRepository<ScrapedPage> pageRepository,
-            IDataRepository<PageScrapeEvent> pageScrapeRepository)
+            ElasticSearchRepository<ScrapedPage> pageRepository,
+            ElasticSearchRepository<PageScrapeEvent> pageScrapeRepository)
         {
             GraphClient = graphClient;
             PageRepository = pageRepository;
@@ -97,12 +97,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
                 throw new InvalidOperationException($"No such page {facebookId}");
             }
 
-            var facebookIdSearch = new Search<ScrapedPage>
-            {
-                Field = p => p.FacebookId,
-                Value = facebookId
-            };
-            if (PageRepository.Paged(search: facebookIdSearch).Data.Any())
+            if (PageRepository.Paged(search: q => q.Term("facebookId", facebookId)).Data.Any())
             {
                 throw new InvalidOperationException($"Page already exists {facebookId}");
             }
@@ -111,17 +106,9 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         }
 
         [HttpGet("all")]
-        public IActionResult Browse(int pageNumber, int pageSize, OrderingType? order)
+        public PagedResponse AllPages(int pageNumber, int pageSize, OrderingType? order, DateTime? since, DateTime? until)
         {
-            var paging = new PagedResponse { PageNumber = pageNumber, PageSize = pageSize };
-            var ordering = new Ordering<ScrapedPage>
-            {
-                Order = order ?? OrderingType.Descending,
-                Path = p => p.Created
-            };
-
-            PagedResponse<ScrapedPage> content = PageRepository.Paged(paging, ordering);
-            return Ok(content);
+            return PageRepository.All(pageNumber, pageSize, p => p.Created, order, p => p.Created, since, until);
         }
 
         [HttpDelete("{id}")]
@@ -131,17 +118,9 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         public PageScrapeEvent GetScrape(string id) => PageScrapeRepository.Get(id);
 
         [HttpGet("scrape/all")]
-        public IActionResult AllScrapes(int pageNumber, int pageSize, OrderingType? order)
+        public PagedResponse AllScrapes(int pageNumber, int pageSize, OrderingType? order, DateTime? since, DateTime? until)
         {
-            var paging = new PagedResponse { PageNumber = pageNumber, PageSize = pageSize };
-            var ordering = new Ordering<PageScrapeEvent>
-            {
-                Order = order ?? OrderingType.Descending,
-                Path = p => p.ImportStart
-            };
-
-            PagedResponse<PageScrapeEvent> content = PageScrapeRepository.Paged(paging, ordering);
-            return Ok(content);
+            return PageScrapeRepository.All(pageNumber, pageSize, p => p.ImportStart, order, p => p.ImportStart, since, until);
         }
 
         [HttpPost("scrape/scrape")]

@@ -4,6 +4,7 @@ using FacebookCivicInsights.Data;
 using FacebookCivicInsights.Models;
 using FacebookPostsScraper.Data.Translator;
 using Microsoft.AspNetCore.Mvc;
+using Nest;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,15 +15,15 @@ namespace FacebookCivicInsights.Controllers.Dashboard
     public class PostScrapeController : Controller
     {
         private GraphClient GraphClient { get; }
-        private IDataRepository<ScrapedPost> PostRepository { get; }
-        private IDataRepository<ScrapedPage> PageRepository { get; }
-        private IDataRepository<PostScrapeEvent> PostScrapeRepository { get; }
+        private ElasticSearchRepository<ScrapedPost> PostRepository { get; }
+        private ElasticSearchRepository<ScrapedPage> PageRepository { get; }
+        private ElasticSearchRepository<PostScrapeEvent> PostScrapeRepository { get; }
 
         public PostScrapeController(
             GraphClient graphClient,
-            IDataRepository<ScrapedPost> postRepository,
-            IDataRepository<ScrapedPage> pageRepository,
-            IDataRepository<PostScrapeEvent> postScrapeRepository)
+            ElasticSearchRepository<ScrapedPost> postRepository,
+            ElasticSearchRepository<ScrapedPage> pageRepository,
+            ElasticSearchRepository<PostScrapeEvent> postScrapeRepository)
         {
             GraphClient = graphClient;
             PostRepository = postRepository;
@@ -34,34 +35,18 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         public ScrapedPost GetPost(string id) => PostRepository.Get(id);
 
         [HttpGet("all")]
-        public IActionResult AllPosts(int pageNumber, int pageSize, OrderingType? order)
+        public PagedResponse AllPosts(int pageNumber, int pageSize, OrderingType? order, DateTime? since, DateTime? until)
         {
-            var paging = new PagedResponse { PageNumber = pageNumber, PageSize = pageSize };
-            var ordering = new Ordering<ScrapedPost>
-            {
-                Order = order ?? OrderingType.Descending,
-                Path = p => p.CreatedTime
-            };
-
-            PagedResponse<ScrapedPost> content = PostRepository.Paged(paging, ordering);
-            return Ok(content);
+            return PostRepository.All(pageNumber, pageSize, p => p.CreatedTime, order, p => p.CreatedTime, since, until);
         }
 
         [HttpGet("scrape/{id}")]
         public PostScrapeEvent GetScrape(string id) => PostScrapeRepository.Get(id);
 
         [HttpGet("scrape/all")]
-        public IActionResult AllScrapes(int pageNumber, int pageSize, OrderingType? order)
+        public PagedResponse AllScrapes(int pageNumber, int pageSize, OrderingType? order, DateTime? since, DateTime? until)
         {
-            var paging = new PagedResponse { PageNumber = pageNumber, PageSize = pageSize };
-            var ordering = new Ordering<PostScrapeEvent>
-            {
-                Order = order ?? OrderingType.Descending,
-                Path = p => p.ImportStart
-            };
-
-            PagedResponse<PostScrapeEvent> content = PostScrapeRepository.Paged(paging, ordering);
-            return Ok(content);
+            return PostScrapeRepository.All(pageNumber, pageSize, p => p.ImportStart, order, p => p.ImportStart, since, until);
         }
 
         public class PostScrapeRequest

@@ -35,7 +35,7 @@ class PageInformation extends Component {
         <div className="col-md-6">
           <TextWell header={page.name} subheader={(page.fanCount || 0) + ' Likes'} />
           <Panel title="Like History" table>
-            <DataTable minSize={10} showIndex={false}
+            <DataTable minSize={12} showIndex={false}
                        mapping={fanCountHistoryMapping} data={page.fanCountHistory} />
           </Panel>
         </div>

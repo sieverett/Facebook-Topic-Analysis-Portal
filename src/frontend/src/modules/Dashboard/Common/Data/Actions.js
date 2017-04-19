@@ -11,7 +11,15 @@ export const sendRequest = (endpoint, method, params, result) => {
       // GET requires a list of `?name1=value1&name2=value`.
       var query = '?';
       for (const key in params) {
-        query += `${key}=${params[key]}&`;
+        const value = params[key];
+        let stringValue;
+        if (value instanceof Date) {
+          stringValue = value.toISOString();
+        } else {
+          stringValue = value;
+        }
+
+        query += `${key}=${stringValue}&`;
       }
 
       endpoint += query;
@@ -89,12 +97,12 @@ const callAPI = (endpoint, method, params, type) => {
   };
 };
 
-export function getPosts(pageNumber, pageSize) {
-  return callAPI('/api/dashboard/post/all', 'GET', {pageNumber, pageSize}, GET_POSTS_DONE);
+export function getPosts(pageNumber, pageSize, since, until) {
+  return callAPI('/api/dashboard/post/all', 'GET', {pageNumber, pageSize, since, until}, GET_POSTS_DONE);
 }
 
-export function getPostScrapes(pageNumber, pageSize) {
-  return callAPI('/api/dashboard/post/scrape/all', 'GET', {pageNumber, pageSize}, GET_SCRAPED_POSTS_DONE);
+export function getPostScrapes(pageNumber, pageSize, since, until) {
+  return callAPI('/api/dashboard/post/scrape/all', 'GET', {pageNumber, pageSize, since, until}, GET_SCRAPED_POSTS_DONE);
 }
 
 export function scrapePosts(since, until) {
@@ -117,12 +125,12 @@ export function deletePage(id) {
   return callAPI(`/api/dashboard/page/${id}`, 'DELETE', {name, id}, DELETE_PAGE_DONE);
 }
 
-export function getPages(pageNumber, pageSize) {
-  return callAPI('/api/dashboard/page/all', 'GET', {pageNumber, pageSize}, GET_PAGES_DONE);
+export function getPages(pageNumber, pageSize, since, until) {
+  return callAPI('/api/dashboard/page/all', 'GET', {pageNumber, pageSize, since, until}, GET_PAGES_DONE);
 }
 
-export function getPageScrapes(pageNumber, pageSize) {
-  return callAPI('/api/dashboard/page/scrape/all', 'GET', {pageNumber, pageSize}, GET_SCRAPED_PAGES_DONE);
+export function getPageScrapes(pageNumber, pageSize, since, until) {
+  return callAPI('/api/dashboard/page/scrape/all', 'GET', {pageNumber, pageSize, since, until}, GET_SCRAPED_PAGES_DONE);
 }
 
 export function scrapePages(pages) {
