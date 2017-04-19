@@ -10,22 +10,31 @@ class ImportPagesForm extends Component {
   componentWillReceiveProps(nextProps) {
     // The user can clear the values of the inputs to display.
     if (nextProps.clear) {
-      this.setState({pages: null});
-      this.refs.file.value = '';
+      this.clear();
       nextProps.onClear();
     }
+  }
+
+  clear = () => {
+    this.setState({pages: null, displayedErrorMessage: null});
+    this.refs.file.value = '';    
   }
 
   handleFilesChanged = (event) => {
     // Read the list of files, parse them into JSON and then display them.
     // The input must be an array of objects with "name" and "facebookId".
     if (event.target.files.length > 0) {
-      var reader = new FileReader();
+      const reader = new FileReader();
       reader.onload = event => {
-        var text = event.target.result;
-        var result = JSON.parse(text);
-
-        this.setState({pages: result});
+        const text = event.target.result;
+        try {
+          const pages = JSON.parse(text);
+          this.setState({pages, displayedErrorMessage: null});
+        }
+        catch (e) {
+          this.clear();
+          this.setState({displayedErrorMessage: e.message});
+        }
       };
       reader.readAsText(event.target.files[0]);
     }
@@ -34,19 +43,19 @@ class ImportPagesForm extends Component {
   handleSubmit = (event) => {
     event.preventDefault();
 
-    let errorMessage;
+    let modalErrorMessage;
     if (!this.state.pages) {
-      errorMessage = <p>Could not read pages from the file.</p>;
+      modalErrorMessage = 'Could not read pages from the file.';
     } else if (this.state.pages.length === 0) {
-      errorMessage = <p>Pages were empty</p>;
+      modalErrorMessage = 'Pages were empty';
     }
 
-    if (!errorMessage) {
+    if (!modalErrorMessage) {
       this.props.onSubmit(this.state.pages);
       return true;
     }
 
-    this.setState({'errorMessage': errorMessage});
+    this.setState({modalErrorMessage});
     window.showModal('#' + this.state.modalId);
   }
 
@@ -55,6 +64,7 @@ class ImportPagesForm extends Component {
       { name: 'Name', key: path => path.name       },
       { name: 'ID',   key: path => path.facebookId }
     ];
+    const { pages, displayedErrorMessage, modalId, modalErrorMessage } = this.state;
 
     return (
       <Panel title="Import Pages">
@@ -63,13 +73,16 @@ class ImportPagesForm extends Component {
             <input ref="file" type="file" onChange={this.handleFilesChanged} />
           </div>
           <div className="form-group">
-            {this.state.pages &&
-              <DataTable showIndex={false} mapping={pageMapping} data={this.state.pages} className='table-bordered' />
+            {pages &&
+              <DataTable showIndex={false} mapping={pageMapping} data={pages} className='table-bordered' />
+            }
+            {displayedErrorMessage &&
+              <p className="text-danger">Error: {displayedErrorMessage}</p>
             }
           </div>
           <SubmitButton title="Import" />
         </form>
-        <Modal id={this.state.modalId} title="Cannot add page">{this.state.errorMessage}</Modal>
+        <Modal id={modalId} title="Cannot add page">{modalErrorMessage}</Modal>
       </Panel>
     );
   }
