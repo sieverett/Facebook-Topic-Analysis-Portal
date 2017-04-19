@@ -20,7 +20,7 @@ class NumericValueForm extends Component {
   handleSubmit = (event) => {
     event.preventDefault();
 
-    var errorMessage = [];
+    let errorMessage = [];
     const pageSize = parseInt(this.state.value, 10);
     if (isNaN(pageSize)) {
       errorMessage.push(<p key='not-int'>{this.props.name} must be an integer.</p>);

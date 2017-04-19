@@ -12,14 +12,13 @@ import ImportPagesForm from '../Components/ImportPagesForm';
 class Pages extends Component {
   state = {}
 
-  componentWillMount() {
-    // Load the up-to-date list of pages each time the page is refreshed or loaded.
-    const pageNumber = this.context.store.getState().pages.pageNumber;
-    const pageSize = this.context.store.getState().pages.pageSize;
-    this.handlePaginationChanged(pageNumber, pageSize);
-  }
+  // Load the up-to-date list of pages each time the page is refreshed or loaded.
+  componentWillMount = () => this.getPages();
 
-  handlePaginationChanged = (pageNumber, pageSize) => this.context.store.dispatch(getPages(pageNumber, pageSize));
+  getPages = (pageNumber, pageSize) => {
+    const { storePageNumber, storePageSize } = this.context.store.getState().pages;
+    this.context.store.dispatch(getPages(pageNumber || storePageNumber, pageSize || storePageSize));
+  } 
 
   handleEditPage = (name, facebookId) => {
     this.context.store.dispatch(editPage(this.state.editingPage.id, name, facebookId)).then(() => {
@@ -68,17 +67,17 @@ class Pages extends Component {
       return <ErrorPanel message={errorMessage} />
     } else if (!pages.data) {
       return <LoadingIndicator />
-    } 
+    }
 
     pages.showPageSizeForm = false;
     pages.showPageNumberForm = false;
-    return <DataTable alwaysShowPaginationForm={false} minSize={12}
-                      mapping={mapping} data={pages.data} pagination={pages}
-                      onRowSelected={this.handleRowSelected} onPaginationChanged={this.handlePaginationChanged} />;
+    return <DataTable minSize={12}
+                      mapping={mapping} data={pages.data} startIndex={pages.startItemIndex + 1}
+                      onRowSelected={this.handleRowSelected} />;
   }
 
   selectedPage = () => {
-    var editAction;
+    let editAction;
     if (this.state.editingPage) {
       editAction = { className: 'btn-primary', title: 'Cancel', onClick: this.cancelEditingPage };
     } else {

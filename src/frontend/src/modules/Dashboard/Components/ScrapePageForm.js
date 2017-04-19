@@ -18,7 +18,7 @@ class ScrapePageForm extends Component {
   handleSubmit = (event) => {
     event.preventDefault();
 
-    var errorMessage = [];
+    let errorMessage = [];
     if (this.state.selectedRows.length === 0) {
       errorMessage.push(<p key='name-empty'>No pages were selected.</p>);
     }
@@ -58,10 +58,8 @@ class ScrapePageForm extends Component {
       return <LoadingIndicator />
     }
 
-    pages.showPageSizeForm = false;
-    pages.showPageNumberForm = false;
-    return <DataTable alwaysShowPaginationForm={false} minSize={10} showIndex={false} showHeader={false} striped={false}
-                      mapping={mapping} data={pages.data} pagination={pages}
+    return <DataTable minSize={10} showIndex={false} showHeader={false} striped={false}
+                      mapping={mapping} data={pages.data}
                       selectionChecker={this.isRowSelected} onRowSelected={this.handleRowSelection} />
   }
 

@@ -14,13 +14,19 @@ class PanelHeading extends Component {
 }
 
 class Panel extends Component {
+  static get defaultProps() { return {showHeading: true}; }
+
   render() {
-    var heading = this.props.heading;
-    if (!heading) {
-      heading = <span><strong>{this.props.title}</strong>{this.props.heading}</span>;
+    let heading;
+    if (this.props.showHeading) {
+      heading = (
+        <div className="panel-heading">
+          {this.props.heading || <span><strong>{this.props.title}</strong>{this.props.heading}</span>}
+        </div>
+      );
     }
 
-    var body;
+    let body;
     if (this.props.table) {
       body = this.props.children;
     } else {
@@ -30,7 +36,7 @@ class Panel extends Component {
     return (
       <section className={this.props.className}>
         <div className={'panel panel-default ' + (this.props.table ? 'table-panel' : '')}>
-          <div className="panel-heading">{heading}</div>
+          {heading}
           {body}
         </div>
       </section>

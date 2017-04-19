@@ -30,7 +30,7 @@ class AddPageForm extends Component {
   handleSubmit = (event) => {
     event.preventDefault();
 
-    var errorMessage = [];
+    let errorMessage = [];
     if (!this.state.name) {
       errorMessage.push(<p key='name-empty'>Name must be non-empty.</p>);
     }

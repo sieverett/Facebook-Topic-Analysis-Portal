@@ -1,8 +1,10 @@
 ﻿using Elasticsearch.Net;
 using Facebook;
+using FacebookPostsScraper.Data;
 using Nest;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq.Expressions;
 
 namespace FacebookCivicInsights.Data
@@ -32,9 +34,9 @@ namespace FacebookCivicInsights.Data
 
         public long TotalCount() => Client.Count<T>().Count;
 
-        private const int DefaultPageNumber = 1;
+        public const int DefaultPageNumber = 1;
         private const int DefaultPageSize = 50;
-        private const int MaxPageSize = 10000;
+        public const int MaxPageSize = 10000;
 
         public PagedResponse<T> Paged(PagedResponse paging = null, Ordering<T> ordering = null, Func<QueryContainerDescriptor<T>, QueryContainer> search = null)
         {
@@ -114,19 +116,18 @@ namespace FacebookCivicInsights.Data
 
     public static class ElasticSearchRepositoryExtensions
     {
-        public static PagedResponse<T> All<T>(this ElasticSearchRepository<T> repository,
-                                              int pageNumber, int pageSize,
-                                              Expression<Func<T, object>> orderPath, OrderingType? order,
-                                              Expression<Func<T, object>> searchPath, DateTime? since, DateTime? until) where T : class, new()
+        private static Ordering<T> GetOrdering<T>(Expression<Func<T, object>> orderPath, OrderingType? order)
         {
-            var paging = new PagedResponse { PageNumber = pageNumber, PageSize = pageSize };
-            var ordering = new Ordering<T>
+            return new Ordering<T>
             {
                 Order = order ?? OrderingType.Descending,
                 Path = orderPath
             };
+        }
 
-            Func<QueryContainerDescriptor<T>, QueryContainer> search = query =>
+        private static Func<QueryContainerDescriptor<T>, QueryContainer> GetSearch<T>(Expression<Func<T, object>> searchPath, DateTime? since, DateTime? until) where T : class, new()
+        {
+            return query =>
             {
                 return query.DateRange(d =>
                 {
@@ -134,8 +135,36 @@ namespace FacebookCivicInsights.Data
                                               .LessThanOrEquals(until ?? DateTime.MaxValue);
                 });
             };
+        }
+
+        public static PagedResponse<T> All<T>(this ElasticSearchRepository<T> repository,
+            int pageNumber, int pageSize,
+            Expression<Func<T, object>> orderPath, OrderingType? order,
+            Expression<Func<T, object>> searchPath, DateTime? since, DateTime? until) where T : class, new()
+        {
+            var paging = new PagedResponse { PageNumber = pageNumber, PageSize = pageSize };
+            Ordering<T> ordering = GetOrdering(orderPath, order);
+            Func<QueryContainerDescriptor<T>, QueryContainer> search = GetSearch(searchPath, since, until);
 
             return repository.Paged(paging, ordering, search);
+        }
+
+        public static MemoryStream Export<TMapping, T>(this ElasticSearchRepository<T> repository,
+            Expression<Func<T, object>> orderPath, OrderingType? order,
+            Expression<Func<T, object>> searchPath, DateTime? since, DateTime? until) where T : class, new()
+        {
+            var paging = new PagedResponse
+            {
+                PageNumber = ElasticSearchRepository<T>.DefaultPageNumber,
+                PageSize = ElasticSearchRepository<T>.MaxPageSize
+            };
+            Ordering<T> ordering = GetOrdering(orderPath, order);
+            Func<QueryContainerDescriptor<T>, QueryContainer> search = GetSearch(searchPath, since, until);
+
+            PagedResponse<T> response = repository.Paged(paging, ordering, search);
+            IEnumerable<T> posts = response.AllData().Flatten();
+
+            return CsvSerialization.Serialize<ScrapedPostMapping>(posts);
         }
     }
 }

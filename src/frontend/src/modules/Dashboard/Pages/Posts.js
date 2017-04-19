@@ -1,29 +1,43 @@
 import React, { Component } from 'react';
 import Moment from 'react-moment';
-import { getPosts } from '../Common/Data/Actions';
+import { exportPosts, getPosts } from '../Common/Data/Actions';
 import DataTable from '../Components/Common/Data/DataTable';
+import PagedDataTableBar from '../Components/Common/Data/PagedDataTableBar';
 import ErrorPanel from '../Components/Common/ErrorPanel';
 import LoadingIndicator from '../Components/Common/LoadingIndicator';
+import Panel from '../Components/Common/Panel';
 import DateRangeForm from '../Components/Common/DateRangeForm';
 
 class Browse extends Component {
-  componentWillMount() {
-    // Load the up-to-date list of posts each time the page is refreshed or loaded.
-    const { pageNumber, pageSize } = this.context.store.getState().posts;
-    this.handlePaginationChanged(pageNumber, pageSize);
-  }
+  // Load the up-to-date list of posts each time the page is refreshed or loaded.
+  componentWillMount = () => this.getPosts();
 
-  handlePaginationChanged = (pageNumber, pageSize) => this.context.store.dispatch(getPosts(pageNumber, pageSize));
+  getPosts = (pageNumber, pageSize, since, until) => {
+    const { storePageNumber, storePageSize } = this.context.store.getState().posts;
+    this.context.store.dispatch(getPosts(pageNumber || storePageNumber, pageSize || storePageSize, since, until));
+  }
 
   handleRowSelection = (data, index) => window.location.href += '/' + data.id;
 
-  handleBrowse = (since, until) => {
-    const { pageNumber, pageSize } = this.context.store.getState().posts;
-    this.context.store.dispatch(getPosts(pageNumber, pageSize, since, until));
+  handleExportToCSV = (since, until) => exportPosts(since, until, (_, errorMessage) => {});
+
+  export() {
+    return (
+      <Panel showHeading={false} className="sub-header">
+        <DateRangeForm action="Browse" onSubmit={(since, until) => this.getPosts(null, null, since, until)}
+                       extraButtonAction="Export to CSV" onExtraButtonClicked={this.handleExportToCSV}
+                       lowerName="From" upperName="To" allowEmpty={true} />
+      </Panel>
+    );
   }
 
-  render() {
-    const { posts, errorMessage } = this.context.store.getState();
+  heading(pagination) {
+    return <PagedDataTableBar {...pagination}
+              onPageSizeChanged={size => this.getPosts(null, size)}
+              onPageNumberChanged={number => this.getPosts(number, null)} />;
+  }
+  
+  table = (posts) => {
     const mapping = [
       { name: 'Page Id',      key: path => path.page.name                                                 },
       { name: 'Created Time', key: path => <Moment format='YYYY-MM-DD HH:mm'>{path.created_time}</Moment> },
@@ -36,19 +50,28 @@ class Browse extends Component {
       { name: 'Permalink',    key: path => <a href={path.permalink_url}>Facebook</a>          }
     ];
 
+    return (
+      <Panel showHeading={false} table={true}>
+        <DataTable mapping={mapping} data={posts.data} startIndex={posts.startItemIndex + 1}
+                   onRowSelected={this.handleRowSelection} />
+      </Panel>
+    );
+  }
+
+  render() {
+    const { posts, errorMessage } = this.context.store.getState();
     if (errorMessage) {
       return <ErrorPanel message={errorMessage} />
     } else if (!posts.data) {
       return <LoadingIndicator />
-    } 
+    }
 
     return (
-      <section>
-        <h1 className="page-header">Browse Posts</h1>
-        <DateRangeForm action="Browse" lowerName="From" upperName="To" allowEmpty={true} onSubmit={this.handleBrowse} />
-        <DataTable mapping={mapping} data={posts.data} pagination={posts}
-                   onRowSelected={this.handleRowSelection} onPaginationChanged={this.handlePaginationChanged} />
-      </section>
+      <div>
+        {this.export()}
+        {this.heading(posts)}
+        {this.table(posts)}
+      </div>
     );
   }
 }

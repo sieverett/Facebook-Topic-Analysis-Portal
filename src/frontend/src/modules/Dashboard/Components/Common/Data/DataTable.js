@@ -1,11 +1,9 @@
 ﻿import React, { Component } from 'react';
-import PagedDataTableBar from './PagedDataTableBar';
 
 class DataTable extends Component {
   static get defaultProps() {
     return {
       className: '',
-      alwaysShowPaginationForm: true,
       showHeader: true,
       showIndex: true,
       striped: true,
@@ -15,28 +13,6 @@ class DataTable extends Component {
   }
 
   title = () => this.props.title ? <h2>{this.props.title}</h2> : undefined;
-
-  handlePageNumberChanged = (pageNumber) => this.props.onPaginationChanged(pageNumber, this.props.pagination.pageSize);
-  handlePageSizeChanged = (pageSize) => this.props.onPaginationChanged(this.props.pagination.pageNumber, pageSize);
-
-  paginationBar = () => {
-    // The user can optionally specify pagination.
-    if (!this.props.pagination) {
-      return undefined;
-    }
-
-    // The user can hide the pagination form if we don't actually need it.
-    var endIndex = this.props.data ? this.props.data.length : 0;
-    if (!this.props.alwaysShowPaginationForm) {
-      if (!endIndex || endIndex < this.props.pagination.pageSize) {
-        return undefined;
-      }
-    }
-
-    return <PagedDataTableBar {...this.props.pagination}
-                              onPageNumberChanged={this.handlePageNumberChanged}
-                              onPageSizeChanged={this.handlePageSizeChanged} />;
-  }
 
   header = () => {
     // The user can optionally hide the header.
@@ -106,15 +82,8 @@ class DataTable extends Component {
   }
 
   rows = () => {
-    // The user can provide a start index. If none is provided, we fall back to the pagination
-    // index.
-    var startIndex = this.props.startIndex;
-    if (!startIndex && this.props.pagination && this.props.pagination.pageSize) {
-      startIndex = (this.props.pagination.pageNumber - 1) * this.props.pagination.pageSize + 1;
-    }
-    if (!startIndex) {
-      startIndex = 0;
-    }
+    // The user can provide a start index.
+    const startIndex = this.props.startIndex || 0;
 
     // Loop through the data and create rows.
     var rows = this.props.data.map((data, index) => {
@@ -151,10 +120,8 @@ class DataTable extends Component {
       );
     });
 
-    // The user can provide a minimum size. If none is provided, we fall back to the pagination
-    // size.
-    var paginationSize = this.props.pagination ? this.props.pagination.pageSize : undefined;
-    var minPageSize = this.props.minSize || paginationSize;
+    // The user can provide a minimum size.
+    const minPageSize = this.props.minSize;
 
     // We need to add extra cells if we're showing the index on the left or the
     // selection indicator on the right.
@@ -189,12 +156,11 @@ class DataTable extends Component {
       tableClassName += ` ${this.props.className}`;
     }
 
-    // Render the title, pagination bar, column names and then the rows.
+    // Render the title, column names and then the rows.
     return (
       <section className="data-table">
         {this.title()}
         <div className="table-responsive">
-          {this.paginationBar()}
           <table className={tableClassName}>
             {this.header()}
             <tbody>

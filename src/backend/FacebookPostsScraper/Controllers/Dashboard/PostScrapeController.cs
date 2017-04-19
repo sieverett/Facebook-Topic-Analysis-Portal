@@ -2,11 +2,13 @@
 using Facebook.Requests;
 using FacebookCivicInsights.Data;
 using FacebookCivicInsights.Models;
+using FacebookPostsScraper.Data;
 using FacebookPostsScraper.Data.Translator;
 using Microsoft.AspNetCore.Mvc;
 using Nest;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace FacebookCivicInsights.Controllers.Dashboard
@@ -38,6 +40,13 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         public PagedResponse AllPosts(int pageNumber, int pageSize, OrderingType? order, DateTime? since, DateTime? until)
         {
             return PostRepository.All(pageNumber, pageSize, p => p.CreatedTime, order, p => p.CreatedTime, since, until);
+        }
+
+        [HttpGet("export")]
+        public IActionResult ExportPost(OrderingType? order, DateTime? since, DateTime? until)
+        {
+            MemoryStream serialized = PostRepository.Export<ScrapedPostMapping, ScrapedPost>(p => p.CreatedTime, order, p => p.CreatedTime, since, until);
+            return File(serialized, "text/csv");
         }
 
         [HttpGet("scrape/{id}")]

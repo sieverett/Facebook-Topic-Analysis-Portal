@@ -8,7 +8,7 @@ class DateDropdown extends Component {
   }
 
   monthsAgo = (numMonthsAgo) => { 
-    var date = new Date();
+    let date = new Date();
     date.setMonth(date.getMonth() - numMonthsAgo);
     return date;
   }
@@ -17,8 +17,8 @@ class DateDropdown extends Component {
     event.preventDefault();
 
     // Adjust the date for the user's selection.
-    var date = null;
-    var type = event.target.type;
+    let date;
+    let type = event.target.type;
     if (type === 'now') {
       date = new Date();
     } else if (type === 'one-day-ago') {
@@ -40,26 +40,28 @@ class DateDropdown extends Component {
     this.props.onUserInput(date);
   }
 
+  option = (text, type) => <li><a href="#" onClick={this.handleDateChanged} type={type}>{text}</a></li>;
+
   render() {
     return (
-      <div className="btn-group" role="group">
-        <a href="#" className="btn btn-default btn-lg dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> {this.props.title} <span className="caret" /> </a>
+      <div className="btn-group">
+        <a href="#" className="btn btn-default btn-lg dropdown-toggle" data-toggle="dropdown"> {this.props.title} <span className="caret" /> </a>
         <ul className="dropdown-menu">
-          <li><a href="#" onClick={this.handleDateChanged} type='now'>Now</a></li>
-          <li><a href="#" onClick={this.handleDateChanged} type='one-day-ago'>Yesterday</a></li>
-          <li><a href="#" onClick={this.handleDateChanged} type='two-days-ago'>2 days ago</a></li>
-          <li><a href="#" onClick={this.handleDateChanged} type='one-week-ago'>1 week ago</a></li>
-          <li><a href="#" onClick={this.handleDateChanged} type='two-weeks-ago'>2 weeks ago</a></li>
-          <li><a href="#" onClick={this.handleDateChanged} type='three-weeks-ago'>3 weeks ago</a></li>
-          <li><a href="#" onClick={this.handleDateChanged} type='one-month-ago'>1 month ago</a></li>
+          {this.option('Now', 'now')}
+          {this.option('Yesterday', 'one-day-ago')}
+          {this.option('2 days ago', 'two-days-ago')}
+          {this.option('1 week ago', 'one-week-ago')}
+          {this.option('2 week ago', 'two-weeks-ago')}
+          {this.option('3 week ago', 'three-weeks-ago')}
+          {this.option('1 month ago', 'one-month-ago')}
           {this.props.lastImportDate &&
-              <span>
-                <li role="separator" className="divider" />
-                <li><a href="#" onClick={this.handleDateChanged} type='last-import-date'>Last Import</a></li>
-              </span>
+            <span>
+              <li role="separator" className="divider" />
+              {this.option('Last Import', 'last-import-date')}
+            </span>
           }
           <li role="separator" className="divider" />
-          <li><a href="#" onClick={this.handleDateChanged} type='reset'>Reset</a></li>
+          {this.option('Reset', 'reset')}
         </ul>
       </div>
     );

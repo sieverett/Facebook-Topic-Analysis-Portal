@@ -30,18 +30,37 @@ export const sendRequest = (endpoint, method, params, result) => {
     }
   }
 
-  var responseTemp;
+  let responseTemp;
   return fetch(WebApi + endpoint, {method, headers, body})
     .then(response => {
+      responseTemp = response;
+
       // Status Code 200 indicates success.
       if (response.status !== 200) {
-        throw new Error(`Invalid status code ${response.status} returned from backend.`);
+        throw new Error(`Invalid status code ${response.status} returned from the backend.`);
       }
 
-      responseTemp = response;
-      return response.json();
-    }).then(json => {
-      result(json, null);
+      const contentType = response.headers.get('content-type');
+      if (contentType.includes('application/json')) {
+        return response.json().then(json => {
+          result(json, null);
+        });
+      } else if (contentType.includes('text/csv')) {
+        return response.blob().then(blob => {
+          const url = window.URL.createObjectURL(blob);
+          
+          let a = document.createElement("a");
+          document.body.appendChild(a);
+          a.style = 'display: none';
+          a.href = url;
+          a.download = 'export.csv';
+          a.click();
+
+          window.URL.revokeObjectURL(url);
+        });
+      } else {
+        throw new Error(`Invalid content type ${contentType} returned from the backend.`);
+      }
     }).catch(function(error) {
       const errorMessage = error.message || 'Fatal Error';
       console.log(error);
@@ -70,6 +89,10 @@ export function getPageScrape(scrapeId, handler) {
   return sendRequest(`/api/dashboard/page/scrape/${scrapeId}`, 'GET', null, handler);
 }
 
+export function exportPosts(since, until, handler) {
+  return sendRequest('/api/dashboard/post/export', 'GET', {since, until}, null, handler);
+}
+
 export const ERROR_OCCURED = 'ERROR_OCCURED';
 
 export const GET_POSTS_DONE = 'GET_POSTS_DONE';
@@ -89,7 +112,7 @@ const callAPI = (endpoint, method, params, type) => {
   return dispatch => {
     return sendRequest(endpoint, method, params, (response, errorMessage) => {
       if (errorMessage) {
-        dispatch({ERROR_OCCURED, errorMessage})
+        dispatch({type: ERROR_OCCURED, errorMessage})
       } else {
         dispatch({type, response});
       }

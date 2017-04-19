@@ -2,26 +2,32 @@ import React, { Component } from 'react';
 import Moment from 'react-moment';
 import moment from 'moment';
 import { getPostScrapes } from '../Common/Data/Actions';
+import PagedDataTableBar from './Common/Data/PagedDataTableBar';
 import DataTable from './Common/Data/DataTable';
 import ErrorPanel from './Common/ErrorPanel';
 import LoadingIndicator from './Common/LoadingIndicator';
+import Panel from './Common/Panel';
 
 class PostScrapeHistory extends Component {
   formatDifference = (now, then) => moment(moment(then).diff(moment(now))).format('mm:ss');
 
-  componentWillMount() {
-    // Load the up-to-date scrape history each time the page is refreshed or loaded.
-    const pageNumber = this.context.store.getState().postScrapes.pageNumber;
-    const pageSize = this.context.store.getState().postScrapes.pageSize;
-    this.handlePaginationChanged(pageNumber, pageSize);
-  }
+  // Load the up-to-date scrape history each time the page is refreshed or loaded.
+  componentWillMount = () => this.getScrapes();
 
-  handlePaginationChanged = (pageNumber, pageSize) => this.context.store.dispatch(getPostScrapes(pageNumber, pageSize));
+  getScrapes = (pageNumber, pageSize) => {
+    const { storePageNumber, storePageSize } = this.context.store.getState().postScrapes;
+    this.context.store.dispatch(getPostScrapes(pageNumber || storePageNumber, pageSize || storePageSize));
+  }
 
   handleRowSelection = (data, index) => window.location.href += '/' + data.id;
 
-  render() {
-    const { postScrapes, errorMessage } = this.context.store.getState();
+  heading = (scrapes) => {
+    return <PagedDataTableBar {...scrapes}
+              onPageSizeChanged={size => this.getScrapes(null, size)}
+              onPageNumberChanged={number => this.getScrapes(number, null)} />;
+  }
+
+  table = (scrapes) => {
     const mapping = [
       { name: 'Date',  key: path => <Moment format='YYYY-MM-DD HH:mm'>{path.importStart}</Moment>     },
       { name: 'Since', key: path => <Moment format='YYYY-MM-DD HH:mm'>{path.since}</Moment>           },
@@ -31,15 +37,29 @@ class PostScrapeHistory extends Component {
       { name: 'Took',  key: path => this.formatDifference(path.importStart, path.importEnd) + ' mins' }
     ];
 
+    return (
+      <Panel showHeading={false} table={true}>
+        <DataTable startIndex={scrapes.startItemIndex + 1} minSize={12}
+                   mapping={mapping} data={scrapes.data}
+                   onRowSelected={this.handleRowSelection}/>
+      </Panel>
+    );
+  }
+
+  render() {
+    const { postScrapes, errorMessage } = this.context.store.getState();
     if (errorMessage) {
       return <ErrorPanel message={errorMessage} />;
     } else if (!postScrapes.data) {
       return <LoadingIndicator />
     }
 
-    return <DataTable title="Scrape History"
-                      mapping={mapping} data={postScrapes.data} pagination={postScrapes}
-                      onPaginationChanged={this.handlePaginationChanged} onRowSelected={this.handleRowSelection} />
+    return (
+      <div>
+        {this.heading(postScrapes)}
+        {this.table(postScrapes)}
+      </div>
+    );
   }
 }
 PostScrapeHistory.contextTypes = { store: React.PropTypes.object };

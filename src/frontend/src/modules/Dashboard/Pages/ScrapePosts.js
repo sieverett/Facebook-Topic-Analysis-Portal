@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { scrapePosts } from '../Common/Data/Actions';
 import DateRangeForm from '../Components/Common/DateRangeForm';
+import Panel from '../Components/Common/Panel';
 import PostScrapeHistory from '../Components/PostScrapeHistory';
 
 class ScrapePosts extends Component {
@@ -9,7 +10,9 @@ class ScrapePosts extends Component {
   render() {
     return (
       <section>
-        <DateRangeForm action="Scrape" lowerName="Since" upperName="Until" onSubmit={this.handleScrapeSubmit} />
+        <Panel showHeading={false} className="sub-header">
+          <DateRangeForm action="Scrape" lowerName="Since" upperName="Until" onSubmit={this.handleScrapeSubmit} />
+        </Panel>
         <PostScrapeHistory />
       </section>
     );

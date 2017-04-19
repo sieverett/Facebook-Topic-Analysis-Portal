@@ -245,6 +245,15 @@ body {
     flex-grow: 1;
 }
 
+.flex .form-inline {
+    display: flex;
+    align-items: center;
+}
+
+.flex .form-inline .form-group {
+    margin-right: 10px;
+}
+
 .flex .panel {
     width: 100%;
     display: flex;

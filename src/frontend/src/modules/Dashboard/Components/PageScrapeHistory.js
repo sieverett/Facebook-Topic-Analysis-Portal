@@ -9,15 +9,15 @@ import LoadingIndicator from './Common/LoadingIndicator';
 class PageScrapeHistory extends Component {
   formatDifference = (now, then) => moment(moment(then).diff(moment(now))).format('mm:ss');
 
-  componentWillMount() {
-    // Load the up-to-date scrape history each time the page is refreshed or loaded.
-    const { pageNumber } = this.context.store.getState().pageScrapes;
-    this.handlePaginationChanged(pageNumber);
-  }
+  // Load the up-to-date scrape history each time the page is refreshed or loaded.
+  componentWillMount = () => this.getScrapes();
 
   handleRowSelection = (data, index) => window.location.href += '/' + data.id;
 
-  handlePaginationChanged = (pageNumber) => this.context.store.dispatch(getPageScrapes(pageNumber, 12));
+  getScrapes = (pageNumber, pageSize) => {
+    const { storePageNumber, storePageSize } = this.context.store.getState().pageScrapes;
+    this.context.store.dispatch(getPageScrapes(pageNumber || storePageNumber, pageSize || storePageSize));
+  }
 
   render() {
     const { pageScrapes, errorMessage } = this.context.store.getState();
@@ -33,12 +33,8 @@ class PageScrapeHistory extends Component {
       return <LoadingIndicator />
     }
 
-    pageScrapes.showPageNumberForm = false;
-    pageScrapes.showPageSizeForm = false;
-
-    return <DataTable alwaysShowPaginationForm={false} minSize={12}
-                      mapping={mapping} data={pageScrapes.data} pagination={pageScrapes}
-                      onRowSelected={this.handleRowSelection} onPaginationChanged={this.handlePaginationChanged} />;
+    return <DataTable minSize={12} mapping={mapping} data={pageScrapes.data} startIndex={pageScrapes.startItemIndex + 1}
+                      onRowSelected={this.handleRowSelection} />;
   }
 }
 PageScrapeHistory.contextTypes = { store: React.PropTypes.object };

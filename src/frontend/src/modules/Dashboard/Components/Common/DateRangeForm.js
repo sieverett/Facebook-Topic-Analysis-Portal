@@ -4,44 +4,45 @@ import DateDropdown from './DateDropdown';
 import Modal from './Modal';
 
 class DateRangeForm extends Component {
-  state = {allowEmpty: false, since: '', until: ''}
+  state = {since: '', until: ''}
 
   handleSinceChange = (event) => this.setState({since: moment(event.target.value).toDate(), began: true});
   handleUntilChange = (event) => this.setState({until: moment(event.target.value).toDate(), began: true});
 
-  updateSince = (val) => this.setState({since: val, began: true});
-  updateUntil = (val) => this.setState({until: val, began: true});
+  updateSince = (since) => this.setState({since, began: true});
+  updateUntil = (until) => this.setState({until, began: true});
 
-  handleSubmit = (event) => {
+  handleSubmit = (event, action) => {
     event.preventDefault();
 
-    var errorMessage = [];
-    if (this.state.since && this.state.until) {
-      if (this.state.since > this.state.until) {
+    const { since, until } = this.state;
+    let errorMessage = [];
+    if (since && until) {
+      if (since > until) {
         errorMessage.push(<p key='greater'>Since cannot be greater than until.</p>);
       }
-      if (this.state.since > new Date()) {
+      if (since > new Date()) {
         errorMessage.push(<p key='since-greater-than-now'>Since cannot refer to a point in the future.</p>);
       }
-      if (this.state.until > new Date()) {
+      if (until > new Date()) {
         errorMessage.push(<p key='until-greater-than-now'>Until cannot refer to a point in the future.</p>);
       }
     } else if (!this.props.allowEmpty) {
-      if (!this.state.since) {
+      if (!since) {
         errorMessage.push(<p key='no-since'>Since has no value.</p>);
       }
 
-      if (!this.state.until) {
+      if (!until) {
         errorMessage.push(<p key='no-until'>Until has no value.</p>);
       }
     }
 
     if (errorMessage.length === 0) {
-      this.props.onSubmit(this.state.since, this.state.until);
+      action(since, until);
       return true;
     }
 
-    this.setState({'errorMessage': errorMessage, began: true});
+    this.setState({errorMessage, began: true});
     window.showModal('#date-form-modal');
   }
 
@@ -78,29 +79,32 @@ class DateRangeForm extends Component {
 
   render() {
     return (
-      <div className="sub-header">
-        <form onSubmit={this.handleSubmit}>
-          <div className="btn-group btn-group-justified" role="group" aria-label="Justified button group with nested dropdown">
-            <DateDropdown title={this.props.lowerName} onUserInput={this.updateSince} />
-            <DateDropdown title={this.props.upperName} onUserInput={this.updateUntil} />
-            <div className="btn-group" role="group">
-              <input type="submit" className="btn btn-primary btn-lg" value={this.props.action} />
-            </div>
-          </div>
-
-          <div className="form-inline" style={{"marginTop": "20px", "marginBottom": "10px"}}>
+      <form className="btn-toolbar" onSubmit={e => this.handleSubmit(e, this.props.onSubmit)}>
+        <div className="btn-group">
+          <DateDropdown title={this.props.lowerName} onUserInput={this.updateSince} />
+          <DateDropdown title={this.props.upperName} onUserInput={this.updateUntil} />
+        </div>
+        <div className="btn-group">
+          <input type="submit" className="btn btn-primary btn-lg" value={this.props.action} />
+        </div>
+        <div className="pull-right flex">
+          <div className="form-inline">
             <div className={'form-group ' + (this.sinceIsValid() ? '' : 'has-error')}>
-              <label htmlFor="since-input" style={{"margin": "0 10px"}}>{this.props.lowerName}</label>
               <input value={this.formatDate(this.state.since)} onChange={this.handleSinceChange} className="form-control" type="datetime-local" name="since" />
             </div>
             <div className={'form-group ' + (this.untilIsValid() ? '' : 'has-error')}>
-              <label htmlFor="until-input" style={{"marginLeft": "10px", "marginRight": "10px"}}>{this.props.upperName}</label>
               <input value={this.formatDate(this.state.until)} onChange={this.handleUntilChange} className="form-control" type="datetime-local" name="until" />
             </div>
           </div>
-          <Modal id="date-form-modal" title="Cannot scrape">{this.state.errorMessage}</Modal>
-        </form>
-      </div>
+          {this.props.extraButtonAction &&
+            <div className="btn-group">
+              <input type="button" className="btn btn-default btn-lg" value={this.props.extraButtonAction}
+                     onClick={e => this.handleSubmit(e, this.props.onExtraButtonClicked)} />
+            </div>          
+          }
+        </div>
+        <Modal id="date-form-modal" title="Cannot scrape">{this.state.errorMessage}</Modal>
+      </form>
     );
   }
 }
