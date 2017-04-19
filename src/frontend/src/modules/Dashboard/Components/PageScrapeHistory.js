@@ -9,16 +9,15 @@ import LoadingIndicator from './Common/LoadingIndicator';
 class PageScrapeHistory extends Component {
   formatDifference = (now, then) => moment(moment(then).diff(moment(now))).format('mm:ss');
 
-  componentWilMount() {
+  componentWillMount() {
     // Load the up-to-date scrape history each time the page is refreshed or loaded.
-    var pageNumber = this.context.store.getState().pageScrapes.pageNumber;
-    var pageSize = this.context.store.getState().pageScrapes.pageSize;
-    this.handlePaginationChanged(pageNumber, pageSize);
+    const { pageNumber } = this.context.store.getState().pageScrapes;
+    this.handlePaginationChanged(pageNumber);
   }
 
   handleRowSelection = (data, index) => window.location.href += '/' + data.id;
 
-  handlePaginationChanged = (pageNumber, pageSize) => this.context.store.dispatch(getPageScrapes(pageNumber, pageSize));
+  handlePaginationChanged = (pageNumber) => this.context.store.dispatch(getPageScrapes(pageNumber, 12));
 
   render() {
     const { pageScrapes, errorMessage } = this.context.store.getState();
