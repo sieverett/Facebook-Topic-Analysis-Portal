@@ -20,9 +20,11 @@ class DateWell extends Component {
     }
 
     return (
-      <div className="well">
-        {title}
-        <h1>{date}</h1>
+      <div className={this.props.className}>
+        <div className="well">
+          {title}
+          <h2>{date}</h2>
+        </div>
       </div>
     );
   }

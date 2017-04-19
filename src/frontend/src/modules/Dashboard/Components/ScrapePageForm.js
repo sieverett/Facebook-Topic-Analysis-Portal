@@ -10,7 +10,7 @@ class ScrapePageForm extends Component {
   state = {selectedRows: [], modalId: 'import-pages-modal'}
 
   componentWillMount() {
-    // Load the up-to-date list of pages when 
+    // Load the up-to-date list of pages when the page is loaded or refreshed.
     this.selectAll();
     this.context.store.dispatch(getPages()).then(this.selectAll);
   }
