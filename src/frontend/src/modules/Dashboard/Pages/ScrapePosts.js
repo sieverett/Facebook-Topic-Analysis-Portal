@@ -4,7 +4,7 @@ import DateRangeForm from '../Components/Common/DateRangeForm';
 import PostScrapeHistory from '../Components/PostScrapeHistory';
 
 class ScrapePosts extends Component {
-  handleScrapeSubmit = (since, until) => scrapePosts(since, until);
+  handleScrapeSubmit = (since, until) => this.context.store.dispatch(scrapePosts(since, until));
 
   render() {
     return (
@@ -15,5 +15,6 @@ class ScrapePosts extends Component {
     );
   }
 }
+ScrapePosts.contextTypes = {store: React.PropTypes.object};
 
 export default ScrapePosts;

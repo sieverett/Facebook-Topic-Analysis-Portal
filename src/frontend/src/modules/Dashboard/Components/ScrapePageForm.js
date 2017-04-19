@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import store from '../Common/Data/Store';
 import { getPages, scrapePages } from '../Common/Data/Actions';
 import DataTable from './Common/Data/DataTable';
 import ErrorPanel from './Common/ErrorPanel';
@@ -25,7 +24,7 @@ class ScrapePageForm extends Component {
     }
 
     if (errorMessage.length === 0) {
-      store.dispatch(scrapePages(this.state.selectedRows));
+      this.context.store.dispatch(scrapePages(this.state.selectedRows));
       return true;
     }
 
