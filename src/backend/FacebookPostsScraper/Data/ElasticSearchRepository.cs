@@ -67,7 +67,7 @@ namespace FacebookCivicInsights.Data
             }
 
             // Page numbers start at 0 for Elasticsearch.
-            int from = (pageNumber - 1) * pageSize;
+            int from = (content.PageNumber - 1) * pageSize;
             IEnumerable<T> all = Client.Search<T>(s =>
             {
                 s = s.From(from).Size(pageSize);
