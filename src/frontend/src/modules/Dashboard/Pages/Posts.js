@@ -12,9 +12,9 @@ class Browse extends Component {
   // Load the up-to-date list of posts each time the page is refreshed or loaded.
   componentWillMount = () => this.getPosts();
 
-  getPosts = (pageNumber, pageSize, since, until) => {
-    const { storePageNumber, storePageSize } = this.context.store.getState().posts;
-    this.context.store.dispatch(getPosts(pageNumber || storePageNumber, pageSize || storePageSize, since, until));
+  getPosts = (newPageNumber, newPageSize, since, until) => {
+    const { pageNumber, pageSize } = this.context.store.getState().posts;
+    this.context.store.dispatch(getPosts(newPageNumber || pageNumber, newPageSize || pageSize, since, until));
   }
   
   handleExportToCSV = (since, until) => exportPosts(since, until, (_, errorMessage) => {});

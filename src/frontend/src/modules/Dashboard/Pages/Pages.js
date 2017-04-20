@@ -12,9 +12,9 @@ class Pages extends Component {
   // Load the up-to-date list of pages each time the page is refreshed or loaded.
   componentWillMount = () => this.getPages();
 
-  getPages = (pageNumber, pageSize) => {
-    const { storePageNumber, storePageSize } = this.context.store.getState().pages;
-    this.context.store.dispatch(getPages(pageNumber || storePageNumber, pageSize || storePageSize));
+  getPages = (newPageNumber, newPageSize) => {
+    const { pageNumber, pageSize } = this.context.store.getState().pages;
+    this.context.store.dispatch(getPages(newPageNumber || pageNumber, newPageSize || pageSize));
   } 
 
   handleEditPage = (name, facebookId) => {

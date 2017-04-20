@@ -10,9 +10,9 @@ class ScrapePosts extends Component {
 
   handleScrapeSubmit = (since, until) => this.context.store.dispatch(scrapePosts(since, until));
 
-  getScrapes = (pageNumber, pageSize) => {
-    const { storePageNumber, storePageSize } = this.context.store.getState().postScrapes;
-    this.context.store.dispatch(getPostScrapes(pageNumber || storePageNumber, pageSize || storePageSize));
+  getScrapes = (newPageNumber, newPageSize) => {
+    const { pageNumber, pageSize } = this.context.store.getState().postScrapes;
+    this.context.store.dispatch(getPostScrapes(newPageNumber || pageNumber, newPageSize || pageSize));
   }
   
   handleScrapeSelected = (data, index) => window.location.href += '/' + data.id;

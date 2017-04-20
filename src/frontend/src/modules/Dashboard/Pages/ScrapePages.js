@@ -11,9 +11,9 @@ class ScrapePages extends Component {
     this.context.store.dispatch(getPages());
   }
 
-  getScrapes = (pageNumber, pageSize, since, until) => {
-    const { storePageNumber, storePageSize } = this.context.store.getState().pageScrapes;
-    this.context.store.dispatch(getPageScrapes(pageNumber || storePageNumber, pageSize || storePageSize, since, until));
+  getScrapes = (newPageNumber, newPageSize, since, until) => {
+    const { pageNumber, pageSize } = this.context.store.getState().pageScrapes;
+    this.context.store.dispatch(getPageScrapes(newPageNumber || pageNumber, newPageSize || pageSize, since, until));
   }
 
   handleExportToCSV = (since, until) => exportPages(since, until, (_, errorMessage) => {});
