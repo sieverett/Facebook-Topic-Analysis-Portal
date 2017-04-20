@@ -5,7 +5,7 @@ class PageControl extends Component {
 
   list(pages, key, className, pageNumber, text) {
     // The user can provide a handler for when a page indicator is clicked.
-    var clickHandler = event => {
+    const clickHandler = event => {
       event.preventDefault();
 
       // A page indicator can't be clicked if it is disabled.
@@ -14,7 +14,7 @@ class PageControl extends Component {
       }
     };
 
-    var listItem = 
+    let listItem = 
       (<li key={key} className={className}>
         <a href='#' onClick={clickHandler}>{text}</a>
       </li>)
@@ -32,7 +32,7 @@ class PageControl extends Component {
       // There is not enough to show on the left hand side. To maintain a constant
       // width of the pagination control, increase the number of page indicators on
       // the right hand side.
-      var extraOnRight = 1 - leftIndexEnd;
+      const extraOnRight = 1 - leftIndexEnd;
       rightIndexEnd += extraOnRight;
       leftIndexEnd = 1;
     }
@@ -50,17 +50,16 @@ class PageControl extends Component {
       }
     }
 
-    var pages = [];
+    const pages = [];
  
     this.list(pages, 'First', '', 1, 1);
     
     // Disable the previous page indicator if we're on the first page.
-    var previousClass = this.props.pageNumber === 1 ? 'disabled' : '';
+    const previousClass = this.props.pageNumber === 1 ? 'disabled' : '';
     this.list(pages, 'Previous', previousClass, this.props.pageNumber -1, '«');
 
     // Add all the indicators on the left hand side
-    for (var left = leftIndexEnd; left < this.props.pageNumber; left++)
-    {
+    for (var left = leftIndexEnd; left < this.props.pageNumber; left++) {
       this.list(pages, left, '', left, left);
     }
 
@@ -68,13 +67,12 @@ class PageControl extends Component {
     this.list(pages, this.props.pageNumber, 'active', this.props.pageNumber, this.props.pageNumber);
 
     // Add all the indicators on the right hand side.
-    for (var right = +this.props.pageNumber + 1; right <= rightIndexEnd; right++)
-    {
+    for (var right = +this.props.pageNumber + 1; right <= rightIndexEnd; right++) {
       this.list(pages, right, '', right, right);
     }
 
     // Disable the next page indicator if we're on the last page.
-    var nextClass = this.props.pageNumber === this.props.numberOfPages ? 'disabled' : ''; 
+    const nextClass = this.props.pageNumber === this.props.numberOfPages ? 'disabled' : ''; 
     this.list(pages, 'Next', nextClass, this.props.pageNumber +1, '»');
     this.list(pages, 'Last', '', this.props.numberOfPages, this.props.numberOfPages);
 

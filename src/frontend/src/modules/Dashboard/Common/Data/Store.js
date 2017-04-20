@@ -9,9 +9,11 @@ const handleGetAPI = (state, action) => {
 
 const handleNewAPI = (state, action) => {
   // Add the item or items to the store.
-  var response = action.response;
-  if (!(response instanceof Array)) {
-    response = [response];
+  let response;
+  if (!(action.response instanceof Array)) {
+    response = [action.response];
+  } else {
+    response = action.response;
   }
 
   return Object.assign({}, state, {

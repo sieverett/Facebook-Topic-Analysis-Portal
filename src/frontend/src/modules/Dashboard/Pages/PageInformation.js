@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Moment from 'react-moment';
+import { showDate } from '../Common/Utilities';
 import { getPage } from '../Common/Data/Actions';
 import DataTable from '../Components/Common/Data/DataTable';
 import ErrorPanel from '../Components/Common/ErrorPanel';
@@ -20,8 +20,8 @@ class PageInformation extends Component {
   render() {
     const { page, errorMessage } = this.state;
     const fanCountHistoryMapping = [
-      { 'name': 'Date',            'key': path => <Moment format='YYYY-MM-DD HH:mm'>{path.date}</Moment> },
-      { 'name': 'Number of Likes', 'key': path => path.fanCount                                          }
+      { name: 'Date',            key: page => showDate(page.date) },
+      { name: 'Number of Likes', key: page => page.fanCount       }
     ];
 
     if (errorMessage) {
