@@ -93,6 +93,10 @@ export function exportPosts(since, until, handler) {
   return sendRequest('/api/dashboard/post/export', 'GET', {since, until}, null, handler);
 }
 
+export function exportPages(since, until, handler) {
+  return sendRequest('/api/dashboard/page/scrape/export', 'GET', {since, until}, null, handler);
+}
+
 export const ERROR_OCCURED = 'ERROR_OCCURED';
 
 export const GET_POSTS_DONE = 'GET_POSTS_DONE';

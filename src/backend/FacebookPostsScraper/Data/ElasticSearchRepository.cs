@@ -4,7 +4,6 @@ using FacebookPostsScraper.Data;
 using Nest;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq.Expressions;
 
 namespace FacebookCivicInsights.Data
@@ -149,9 +148,10 @@ namespace FacebookCivicInsights.Data
             return repository.Paged(paging, ordering, search);
         }
 
-        public static MemoryStream Export<TMapping, T>(this ElasticSearchRepository<T> repository,
+        public static byte[] Export<T>(this ElasticSearchRepository<T> repository,
             Expression<Func<T, object>> orderPath, OrderingType? order,
-            Expression<Func<T, object>> searchPath, DateTime? since, DateTime? until) where T : class, new()
+            Expression<Func<T, object>> searchPath, DateTime? since, DateTime? until,
+            Func<T, dynamic> mapping) where T : class, new()
         {
             var paging = new PagedResponse
             {
@@ -162,9 +162,9 @@ namespace FacebookCivicInsights.Data
             Func<QueryContainerDescriptor<T>, QueryContainer> search = GetSearch(searchPath, since, until);
 
             PagedResponse<T> response = repository.Paged(paging, ordering, search);
-            IEnumerable<T> posts = response.AllData().Flatten();
+            IEnumerable<T> data = response.AllData().Flatten();
 
-            return CsvSerialization.Serialize<ScrapedPostMapping>(posts);
+            return CsvSerialization.Serialize(data, mapping);
         }
     }
 }

@@ -5,10 +5,8 @@ using FacebookCivicInsights.Models;
 using FacebookPostsScraper.Data;
 using FacebookPostsScraper.Data.Translator;
 using Microsoft.AspNetCore.Mvc;
-using Nest;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace FacebookCivicInsights.Controllers.Dashboard
@@ -45,8 +43,8 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         [HttpGet("export")]
         public IActionResult ExportPost(OrderingType? order, DateTime? since, DateTime? until)
         {
-            MemoryStream serialized = PostRepository.Export<ScrapedPostMapping, ScrapedPost>(p => p.CreatedTime, order, p => p.CreatedTime, since, until);
-            return File(serialized, "text/csv");
+            byte[] serialized = PostRepository.Export(p => p.CreatedTime, order, p => p.CreatedTime, since, until, CsvSerialization.MapPost);
+            return File(serialized, "text/csv", "export.csv");
         }
 
         [HttpGet("scrape/{id}")]

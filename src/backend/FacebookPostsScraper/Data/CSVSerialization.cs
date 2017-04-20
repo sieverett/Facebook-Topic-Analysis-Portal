@@ -1,48 +1,65 @@
-﻿using CsvHelper;
-using CsvHelper.Configuration;
-using FacebookCivicInsights.Models;
-using System.Collections;
+﻿using System;
+using System.Collections.Generic;
+using System.Dynamic;
 using System.IO;
+using System.Linq;
 using System.Text;
+using CsvHelper;
+using FacebookCivicInsights.Models;
 
 namespace FacebookPostsScraper.Data
 {
     public static class CsvSerialization
     {
-        public static MemoryStream Serialize<TMapping>(IEnumerable data) where TMapping : CsvClassMap
+        public static byte[] Serialize<T>(IEnumerable<T> data, Func<T, dynamic> mappingFactory)
         {
-            var memoryStream = new MemoryStream();
-            var streamWriter = new StreamWriter(memoryStream, Encoding.UTF8);
+            using (var memoryStream = new MemoryStream())
+            {
+                using (var streamWriter = new StreamWriter(memoryStream, Encoding.UTF8))
+                using (var csvWriter = new CsvWriter(streamWriter))
+                {
+                    csvWriter.WriteRecords(data.Select(p => mappingFactory(p)));
+                }
 
-            var csv = new CsvWriter(streamWriter);
-            csv.Configuration.RegisterClassMap<TMapping>();
-
-            csv.WriteRecords(data);
-
-            memoryStream.Position = 0;
-            return memoryStream;
+               return memoryStream.ToArray();
+            }
         }
-    }
 
-    public sealed class ScrapedPostMapping : CsvClassMap<ScrapedPost>
-    {
-        public ScrapedPostMapping()
+        public static dynamic MapPost(ScrapedPost post)
         {
-            Map(p => p.Id);
-            Map(p => p.Message);
-            Map(p => p.Link);
-            Map(p => p.CreatedTime);
-            Map(p => p.UpdatedTime);
-            Map(p => p.StatusType);
-            Map(p => p.Type);
-            Map(p => p.Permalink);
-            Map(p => p.Reactions.Summary.TotalCount).Name("Reactions");
-            Map(p => p.Comments.Summary.TotalCount).Name("Comments");
-            Map(p => p.Shares.Count).Name("Shares");
-            Map(p => p.Permalink);
-            Map(p => p.Page.Name).Name("pageName");
-            Map(p => p.Page.FacebookId).Name("pageId");
-            Map(p => p.Page.FanCount).Name("pageLikes");
+            dynamic expanded = new ExpandoObject();
+
+            expanded.Id = post.Id;
+            expanded.Message = post.Message;
+            expanded.Link = post.Link;
+            expanded.CreatedTime = post.CreatedTime;
+            expanded.UpdatedTime = post.UpdatedTime;
+            expanded.StatusType = post.StatusType;
+            expanded.Type = post.Type;
+            expanded.Permalink = post.Permalink;
+            expanded.Reactions = post.Reactions.Summary.TotalCount;
+            expanded.Comments = post.Comments.Summary.TotalCount;
+            expanded.Shares = post.Shares.Count;
+            expanded.pageName = post.Page.Name;
+            expanded.pageId = post.Page.FacebookId;
+            expanded.pageLikes = post.Page.FanCount;
+
+            return expanded;
+        }
+
+        public static dynamic MapPageScrape(PageScrapeEvent scrape)
+        {
+            dynamic expanded = new ExpandoObject();
+            IDictionary<string, object> expandedDictionary = (IDictionary<string, object>)expanded;
+
+            expanded.Date = scrape.ImportStart;
+
+            foreach (ScrapedPage page in scrape.Pages)
+            {
+                expandedDictionary.Add(page.Name, page.FanCount);
+            }
+
+            return expanded;
         }
     }
 }

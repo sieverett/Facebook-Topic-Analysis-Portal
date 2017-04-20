@@ -3,6 +3,7 @@ using Facebook.Models;
 using Facebook.Requests;
 using FacebookCivicInsights.Data;
 using FacebookCivicInsights.Models;
+using FacebookPostsScraper.Data;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -123,6 +124,13 @@ namespace FacebookCivicInsights.Controllers.Dashboard
             return PageScrapeRepository.All(pageNumber, pageSize, p => p.ImportStart, order, p => p.ImportStart, since, until);
         }
 
+        [HttpGet("scrape/export")]
+        public IActionResult ExportPost(OrderingType? order, DateTime? since, DateTime? until)
+        {
+            byte[] serialized = PageScrapeRepository.Export(p => p.ImportStart, order, p => p.ImportStart, since, until, CsvSerialization.MapPageScrape);
+            return File(serialized, "text/csv", "export.csv");
+        }
+
         [HttpPost("scrape/scrape")]
         public PageScrapeEvent ScrapePages([FromBody]IEnumerable<string> request)
         {
@@ -172,7 +180,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
                 Id = Guid.NewGuid().ToString(),
                 ImportStart = start,
                 ImportEnd = DateTime.Now,
-                Pages = pages
+                Pages = pages.ToList()
             };
 
             return PageScrapeRepository.Save(pageScrapeEvent);
