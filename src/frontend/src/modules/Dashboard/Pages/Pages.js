@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import { getPages, newPage, newPages, editPage, deletePage } from '../Common/Data/Actions';
 import Panel from '../Components/Common/Panel';
 import ToolbarPanel from '../Components/Common/ToolbarPanel';
-import AddPageForm from '../Components/AddPageForm';
-import ImportPagesForm from '../Components/ImportPagesForm';
+import AddPageForm from '../Components/Pages/AddPageForm';
+import ImportPagesForm from '../Components/Pages/ImportPagesForm';
 import PageList from '../Components/Pages/PageList';
 
 class Pages extends Component {

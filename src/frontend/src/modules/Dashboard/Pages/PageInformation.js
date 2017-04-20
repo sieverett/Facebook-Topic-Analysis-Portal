@@ -41,9 +41,9 @@ class PageInformation extends Component {
         </div>
         <div className="col-md-6">
           <TextWell header={<a href={'https://facebook.com/' + page.facebookId}>https://facebook.com/{page.facebookId}</a>} />
-            <DateWell title="First Scrape" date={page.firstScrape} fallbackTitle="Never Imported" />
-            <DateWell title="Latest Scrape" date={page.latestScrape} fallbackTitle="Never Imported" />
-            <div className="well">
+          <DateWell title="First Scrape" date={page.firstScrape} fallbackTitle="Never Imported" />
+          <DateWell title="Latest Scrape" date={page.latestScrape} fallbackTitle="Never Imported" />
+          <div className="well">
             <h5 className="text-muted">{page.id}</h5>
           </div>
         </div>

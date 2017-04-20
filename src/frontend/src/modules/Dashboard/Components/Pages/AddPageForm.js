@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import Modal from './Common/Modal';
-import Panel from './Common/Panel';
-import SubmitButton from './Common/SubmitButton';
+import Modal from '../Common/Modal';
+import Panel from '../Common/Panel';
+import SubmitButton from '../Common/SubmitButton';
 
 class AddPageForm extends Component {
   constructor(props) {

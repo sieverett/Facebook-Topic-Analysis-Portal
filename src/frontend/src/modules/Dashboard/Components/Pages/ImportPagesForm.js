@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
-import DataTable from './Common/Data/DataTable';
-import Modal from './Common/Modal';
-import Panel from './Common/Panel';
-import SubmitButton from './Common/SubmitButton';
+import DataTable from '../Common/Data/DataTable';
+import Modal from '../Common/Modal';
+import Panel from '../Common/Panel';
+import SubmitButton from '../Common/SubmitButton';
 
 class ImportPagesForm extends Component {
   state = {modalId: 'import-pages-modal'}
