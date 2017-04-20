@@ -16,12 +16,12 @@ class Browse extends Component {
     const { storePageNumber, storePageSize } = this.context.store.getState().posts;
     this.context.store.dispatch(getPosts(pageNumber || storePageNumber, pageSize || storePageSize, since, until));
   }
+  
+  handleExportToCSV = (since, until) => exportPosts(since, until, (_, errorMessage) => {});
 
   handleRowSelection = (data, index) => window.location.href += '/' + data.id;
 
-  handleExportToCSV = (since, until) => exportPosts(since, until, (_, errorMessage) => {});
-
-  export() {
+  export = () => {
     return (
       <Panel showHeading={false} className="sub-header">
         <DateRangeForm action="Browse" onSubmit={(since, until) => this.getPosts(null, null, since, until)}
@@ -31,7 +31,7 @@ class Browse extends Component {
     );
   }
 
-  heading(pagination) {
+  heading = (pagination) => {
     return <PagedDataTableBar {...pagination}
               onPageSizeChanged={size => this.getPosts(null, size)}
               onPageNumberChanged={number => this.getPosts(number, null)} />;

@@ -1,13 +1,10 @@
 import React, { Component } from 'react';
-import Moment from 'react-moment';
 import { getPages, newPage, newPages, editPage, deletePage } from '../Common/Data/Actions';
-import DataTable from '../Components/Common/Data/DataTable';
-import ErrorPanel from '../Components/Common/ErrorPanel';
-import LoadingIndicator from '../Components/Common/LoadingIndicator';
 import Panel from '../Components/Common/Panel';
 import ToolbarPanel from '../Components/Common/ToolbarPanel';
 import AddPageForm from '../Components/AddPageForm';
 import ImportPagesForm from '../Components/ImportPagesForm';
+import PageList from '../Components/Pages/PageList';
 
 class Pages extends Component {
   state = {}
@@ -37,7 +34,7 @@ class Pages extends Component {
 
   handleCleared = () => this.setState({clearEditPageForm: false, clearAddPageForm: false, clearImportForm: false});
 
-  handleRowSelected = (data, index) => this.setState({selectedPage: data, editingPage: null});
+  handlePageSelected = (data, index) => this.setState({selectedPage: data, editingPage: null});
 
   viewSelectedPage = () => window.location.href += '/' + this.state.selectedPage.id;
 
@@ -49,32 +46,6 @@ class Pages extends Component {
   }
 
   clearSelectedPage = () => this.setState({selectedPage: null, editingPage: null});
-
-  showDate(date, fallback) { return date ? <Moment format='YYYY-MM-DD HH:mm'>{date}</Moment> : fallback; }
-
-  pagesList = () => {
-    const { pages, errorMessage } = this.context.store.getState();
-    const mapping = [
-      { name: 'Name',            key: path => path.name                                         },
-      { name: 'ID',              key: path => path.facebookId                                   },
-      { name: 'Number Of Likes', key: path => (path.fanCount || 0) + ' Likes'                   },
-      { name: 'First Scrape',    key: path => this.showDate(path.firstScrape, 'Never Scraped')  },
-      { name: 'Latest Scrape',   key: path => this.showDate(path.latestScrape, 'Never Scraped') },
-      { name: 'Added',           key: path => this.showDate(path.created)                       }
-    ];
-
-    if (errorMessage) {
-      return <ErrorPanel message={errorMessage} />
-    } else if (!pages.data) {
-      return <LoadingIndicator />
-    }
-
-    pages.showPageSizeForm = false;
-    pages.showPageNumberForm = false;
-    return <DataTable minSize={12}
-                      mapping={mapping} data={pages.data} startIndex={pages.startItemIndex + 1}
-                      onRowSelected={this.handleRowSelected} />;
-  }
 
   selectedPage = () => {
     let editAction;
@@ -112,11 +83,13 @@ class Pages extends Component {
   }
 
   render() {
+    const { pages, errorMessage } = this.context.store.getState();
+
     return (
       <section>
         <h1 className="page-header">Browse Pages</h1>
         <Panel className="col-md-8" title="Pages" table>
-          {this.pagesList()}            
+          <PageList pages={pages} errorMessage={errorMessage} onRowSelected={this.handlePageSelected} />
         </Panel>
         <section className="col-md-4">
           {this.selectedPage()}

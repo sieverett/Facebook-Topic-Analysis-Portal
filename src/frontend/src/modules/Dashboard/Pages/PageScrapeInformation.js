@@ -11,7 +11,7 @@ class PageScrapeInformation extends Component {
 
   componentWillMount() {
     const { scrapeId } = this.props.params;
-    getPageScrape(scrapeId, (page, errorMessage) => this.setState({page, errorMessage}));
+    getPageScrape(scrapeId, (scrape, errorMessage) => this.setState({scrape, errorMessage}));
   }
 
   render() {

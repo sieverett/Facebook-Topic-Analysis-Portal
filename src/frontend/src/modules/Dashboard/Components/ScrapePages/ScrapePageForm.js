@@ -1,19 +1,16 @@
 import React, { Component } from 'react';
-import { getPages, scrapePages } from '../Common/Data/Actions';
-import DataTable from './Common/Data/DataTable';
-import ErrorPanel from './Common/ErrorPanel';
-import LoadingIndicator from './Common/LoadingIndicator';
-import Modal from './Common/Modal';
-import Panel, { PanelHeading } from './Common/Panel';
+import DataTable from '../Common/Data/DataTable';
+import ErrorPanel from '../Common/ErrorPanel';
+import LoadingIndicator from '../Common/LoadingIndicator';
+import Modal from '../Common/Modal';
+import Panel, { PanelHeading } from '../Common/Panel';
 
 class ScrapePageForm extends Component {
   state = {selectedRows: [], modalId: 'import-pages-modal'}
 
-  componentWillMount() {
-    // Load the up-to-date list of pages when the page is loaded or refreshed.
-    this.selectAll();
-    this.context.store.dispatch(getPages()).then(this.selectAll);
-  }
+  // Select all pages by default.
+  componentWillMount = () => this.selectAll();
+  componentWillReceiveProps = (nextProps) => this.selectAll();
 
   handleSubmit = (event) => {
     event.preventDefault();
@@ -24,7 +21,7 @@ class ScrapePageForm extends Component {
     }
 
     if (errorMessage.length === 0) {
-      this.context.store.dispatch(scrapePages(this.state.selectedRows));
+      this.props.onSubmit(this.state.selectedRows);
       return true;
     }
 
@@ -33,7 +30,7 @@ class ScrapePageForm extends Component {
   }
 
   handlePanelClicked = () => this.state.selectedRows.length === 0 ? this.selectAll() : this.setState({selectedRows: []});
-  selectAll = () => this.setState({selectedRows: this.context.store.getState().pages.data.map(p => p.id)});
+  selectAll = () => this.setState({selectedRows: this.props.pages.data.map(p => p.id)});
 
   isRowSelected = (data, index) => this.state.selectedRows.includes(data.id);
 
@@ -50,7 +47,7 @@ class ScrapePageForm extends Component {
   }
 
   pageList() {
-    const { pages, errorMessage } = this.context.store.getState();
+    const { pages, errorMessage } = this.props;
     const mapping = [ 'Name' ];
     if (errorMessage) {
       return <ErrorPanel message={errorMessage} />;
@@ -69,7 +66,7 @@ class ScrapePageForm extends Component {
     const panelHeading = <PanelHeading title="Scrape Pages" buttonTitle={panelButtonTitle} onClick={this.handlePanelClicked} />;
 
     return (
-      <Panel className="col-md-5" table heading={panelHeading}>
+      <Panel className="col-md-4" table heading={panelHeading}>
         <form onSubmit={this.handleSubmit}>
           <div className="form-group">
             {this.pageList()}
@@ -83,6 +80,5 @@ class ScrapePageForm extends Component {
     );
   }
 }
-ScrapePageForm.contextTypes = { store: React.PropTypes.object };
 
 export default ScrapePageForm;
