@@ -1,15 +1,21 @@
 import React, { Component } from 'react';
 
 class DateDropdown extends Component {
-  daysAgo = (numDaysAgo) => { 
+  hoursAgo = (hoursAgo) => { 
     var date = new Date();
-    date.setDate(date.getDate() - numDaysAgo);
+    date.setHours(date.getHours() - hoursAgo);
     return date;
   }
 
-  monthsAgo = (numMonthsAgo) => { 
+  daysAgo = (daysAgo) => { 
+    var date = new Date();
+    date.setDate(date.getDate() - daysAgo);
+    return date;
+  }
+
+  monthsAgo = (monthsAgo) => { 
     let date = new Date();
-    date.setMonth(date.getMonth() - numMonthsAgo);
+    date.setMonth(date.getMonth() - monthsAgo);
     return date;
   }
 
@@ -21,6 +27,10 @@ class DateDropdown extends Component {
     let type = event.target.type;
     if (type === 'now') {
       date = new Date();
+    } else if (type === 'one-hour-ago') {
+      date = this.hoursAgo(1);
+    } else if (type === 'twelve-hours-ago') {
+      date = this.hoursAgo(12);
     } else if (type === 'one-day-ago') {
       date = this.daysAgo(1);
     } else if (type === 'two-days-ago') {
@@ -48,6 +58,8 @@ class DateDropdown extends Component {
         <a href="#" className="btn btn-default btn-lg dropdown-toggle" data-toggle="dropdown"> {this.props.title} <span className="caret" /> </a>
         <ul className="dropdown-menu">
           {this.option('Now', 'now')}
+          {this.option('1 hour ago', 'one-hour-ago')}
+          {this.option('12 hours ago', 'twelve-hours-ago')}
           {this.option('Yesterday', 'one-day-ago')}
           {this.option('2 days ago', 'two-days-ago')}
           {this.option('1 week ago', 'one-week-ago')}
