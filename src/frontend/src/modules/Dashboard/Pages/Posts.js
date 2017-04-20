@@ -52,7 +52,7 @@ class Browse extends Component {
 
     return (
       <Panel showHeading={false} table={true}>
-        <DataTable mapping={mapping} data={posts.data} startIndex={posts.startItemIndex + 1}
+        <DataTable mapping={mapping} data={posts.data} startIndex={posts.startItemIndex + 1} minSize={12}
                    onRowSelected={this.handleRowSelection} />
       </Panel>
     );

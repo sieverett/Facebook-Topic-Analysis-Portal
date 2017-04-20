@@ -32,7 +32,7 @@ class DateDropdown extends Component {
     } else if (type === 'three-weeks-ago') {
       date = this.daysAgo(21);
     } else if (type === 'one-month-ago') {
-      date = this.monthsAgo(21);
+      date = this.monthsAgo(1);
     } else if (type === 'last-import-date') {
       date = this.props.lastImportDate;
     }
