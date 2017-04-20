@@ -1,4 +1,5 @@
-﻿using Facebook;
+﻿using Elasticsearch.Net;
+using Facebook;
 using Facebook.Requests;
 using FacebookCivicInsights.Data;
 using FacebookCivicInsights.Models;
@@ -106,6 +107,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
                     PageId = page.FacebookId,
                     Since = request.Since,
                     Until = request.Until,
+                    PaginationLimit = 100,
                     Edge = PostsRequestEdge.Posts
                 };
 
@@ -116,7 +118,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
                     post.Page = page;
                     post.Created = DateTime.Now;
                     post.LastScraped = start;
-                    PostRepository.Save(post);
+                    PostRepository.Save(post, Refresh.False);
 
                     numberOfPosts++;
                 }

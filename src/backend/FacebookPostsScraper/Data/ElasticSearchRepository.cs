@@ -19,13 +19,9 @@ namespace FacebookCivicInsights.Data
             Client = new ElasticClient(settings);
         }
 
-        public T Save(T data)
+        public T Save(T data, Refresh refresh = Refresh.WaitFor)
         {
-            Client.Index(new IndexRequest<T>(data)
-            {
-                Refresh = Refresh.WaitFor
-            });
-
+            Client.Index(new IndexRequest<T>(data) { Refresh = refresh });
             return data;
         }
 
