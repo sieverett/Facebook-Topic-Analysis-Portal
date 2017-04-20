@@ -51,8 +51,8 @@ class DateDropdown extends Component {
           {this.option('Yesterday', 'one-day-ago')}
           {this.option('2 days ago', 'two-days-ago')}
           {this.option('1 week ago', 'one-week-ago')}
-          {this.option('2 week ago', 'two-weeks-ago')}
-          {this.option('3 week ago', 'three-weeks-ago')}
+          {this.option('2 weeks ago', 'two-weeks-ago')}
+          {this.option('3 weeks ago', 'three-weeks-ago')}
           {this.option('1 month ago', 'one-month-ago')}
           {this.props.lastImportDate &&
             <span>

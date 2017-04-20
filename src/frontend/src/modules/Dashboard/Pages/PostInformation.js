@@ -62,7 +62,7 @@ class PostInformation extends Component {
 
     return (
       <section>
-        <h1 className="page-header">Page Information</h1>
+        <h1 className="page-header">Post Information</h1>
           <div className="row flex">
             <div className="col-md-6"><PostMessage post={post} /></div>
             <div className="col-md-6"><PostMessage post={translatedPost} /></div>
