@@ -93,7 +93,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         private Page VerifyFacebookPage(string facebookId)
         {
             // Query the Facebook Graph API to make sur the page with the ID exists.
-            Page facebookPage = GraphClient.GetPage(new PageRequest { PageId = facebookId });
+            Page facebookPage = GraphClient.GetPage<Page>(new PageRequest { PageId = facebookId });
             if (facebookPage == null)
             {
                 throw new InvalidOperationException($"No such page {facebookId}");
@@ -155,7 +155,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
                 }
 
                 // Query the Facebook Graph API to get the page likes.
-                Page facebookPage = GraphClient.GetPage(new PageRequest { PageId = page.FacebookId });
+                Page facebookPage = GraphClient.GetPage<Page>(new PageRequest { PageId = page.FacebookId });
                 if (facebookPage == null)
                 {
                     throw new InvalidOperationException($"No such facebook page {page.Name}");
