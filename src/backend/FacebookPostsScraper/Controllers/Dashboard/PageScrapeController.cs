@@ -1,4 +1,5 @@
-﻿using Facebook;
+﻿using Elasticsearch.Net;
+using Facebook;
 using Facebook.Models;
 using Facebook.Requests;
 using FacebookCivicInsights.Data;
@@ -169,7 +170,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
                     FanCount = facebookPage.FanCount
                 });
 
-                PageRepository.Save(page);
+                PageRepository.Save(page, Refresh.False);
 
                 // Don't store the entire fan count history for each page on each scrape.
                 page.FanCountHistory = new List<DatedFanCount> { page.FanCountHistory.First() };
