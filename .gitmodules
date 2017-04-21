@@ -1,0 +1,3 @@
+[submodule "src/backend/facebook.net"]
+	path = src/backend/facebook.net
+	url = https://github.com/hughbe/facebook.net.git
