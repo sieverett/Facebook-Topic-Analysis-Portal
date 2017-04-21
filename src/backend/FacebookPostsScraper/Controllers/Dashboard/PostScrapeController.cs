@@ -115,7 +115,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
                 };
 
                 PagedResponse<ScrapedPost> postsResponse = GraphClient.GetPosts<ScrapedPost>(graphRequest);
-                foreach (ScrapedPost post in postsResponse.AllData().Flatten())
+                foreach (ScrapedPost post in postsResponse)
                 {
                     // Update the database with the new post.
                     Location location = post.Place?.Location;

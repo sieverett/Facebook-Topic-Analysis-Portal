@@ -51,12 +51,8 @@ namespace FacebookCivicInsights.Controllers.Dashboard
             }
 
             DateTime now = DateTime.Now;
-            IEnumerable<ScrapedComment> comments = GraphClient.GetComments<ScrapedComment>(new CommentsRequest
-            {
-                ParentId = request.PostId
-            }).AllData().Flatten();
-
-            foreach (ScrapedComment comment in comments)
+            CommentsRequest graphRequest = new CommentsRequest { ParentId = request.PostId };
+            foreach (ScrapedComment comment in GraphClient.GetComments<ScrapedComment>(graphRequest))
             {
                 if (comment.Created == DateTime.MinValue)
                 {
@@ -66,9 +62,9 @@ namespace FacebookCivicInsights.Controllers.Dashboard
                 comment.ParentId = request.PostId;
 
                 CommentRepository.Save(comment, Refresh.False);
-            }
 
-            return comments;
+                yield return comment;
+            }
         }
     }
 }
