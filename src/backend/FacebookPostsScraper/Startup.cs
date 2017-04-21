@@ -24,13 +24,6 @@ namespace FacebookCivicInsights
         }
 
         public IConfigurationRoot Configuration { get; }
-
-        class Post
-        {
-            public string Id { get; set; }
-            public int Metadata { get; set; }
-            public GeoLocation GeoPoint { get; set; }
-        }
         
         public void ConfigureServices(IServiceCollection services)
         {
@@ -53,6 +46,7 @@ namespace FacebookCivicInsights
             string elasticSearchDefaultIndex = Configuration["elasticsearch:defaultIndex"];
             var postRepository = new ElasticSearchRepository<ScrapedPost>(elasticSearchUrl, elasticSearchDefaultIndex + "-post", i =>
             {
+                // We need to tell Elasticsearch explicitly that this field is a geopoint.
                 return i.Mappings(ms => ms.Map<ScrapedPost>(m => m.Properties(p =>
                 {
                     return p.GeoPoint(g => g.Name("stringGeoPoint"));
