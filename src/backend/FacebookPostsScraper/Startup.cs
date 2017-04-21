@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Facebook;
 using FacebookCivicInsights.Data;
 using FacebookCivicInsights.Models;
+using Nest;
 
 namespace FacebookCivicInsights
 {
@@ -23,6 +24,13 @@ namespace FacebookCivicInsights
         }
 
         public IConfigurationRoot Configuration { get; }
+
+        class Post
+        {
+            public string Id { get; set; }
+            public int Metadata { get; set; }
+            public GeoLocation GeoPoint { get; set; }
+        }
         
         public void ConfigureServices(IServiceCollection services)
         {
@@ -43,7 +51,13 @@ namespace FacebookCivicInsights
             // into our controllers. This preserves the same state between the controllers.
             string elasticSearchUrl = Configuration["elasticsearch:url"];
             string elasticSearchDefaultIndex = Configuration["elasticsearch:defaultIndex"];
-            var postRepository = new ElasticSearchRepository<ScrapedPost>(elasticSearchUrl, elasticSearchDefaultIndex + "-post");
+            var postRepository = new ElasticSearchRepository<ScrapedPost>(elasticSearchUrl, elasticSearchDefaultIndex + "-post", i =>
+            {
+                return i.Mappings(ms => ms.Map<ScrapedPost>(m => m.Properties(p =>
+                {
+                    return p.GeoPoint(g => g.Name("stringGeoPoint"));
+                })));
+            });
             services.AddSingleton(postRepository);
 
             var pageRepository = new ElasticSearchRepository<ScrapedPage>(elasticSearchUrl, elasticSearchDefaultIndex + "-page");

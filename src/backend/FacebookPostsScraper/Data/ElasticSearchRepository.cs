@@ -10,18 +10,25 @@ namespace FacebookCivicInsights.Data
 {
     public class ElasticSearchRepository<T> where T: class, new()
     {
+        private string DefaultIndex { get; }
         private ElasticClient Client { get; }
 
-        public ElasticSearchRepository(string url, string defaultIndex)
+        public ElasticSearchRepository(string url, string defaultIndex, Func<CreateIndexDescriptor, ICreateIndexRequest> createIndex = null)
         {
             var node = new Uri(url);
             var settings = new ConnectionSettings(node).DefaultIndex(defaultIndex);
+            DefaultIndex = defaultIndex;
             Client = new ElasticClient(settings);
+
+            if (createIndex != null)
+            {
+                Client.CreateIndex(defaultIndex, createIndex);
+            }
         }
 
         public T Save(T data, Refresh refresh = Refresh.WaitFor)
         {
-            Client.Index(new IndexRequest<T>(data) { Refresh = refresh });
+            Client.Index(data, idx => idx.Index(DefaultIndex).Refresh(refresh));
             return data;
         }
 

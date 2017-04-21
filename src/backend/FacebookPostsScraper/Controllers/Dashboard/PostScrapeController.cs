@@ -1,5 +1,6 @@
 ﻿using Elasticsearch.Net;
 using Facebook;
+using Facebook.Models;
 using Facebook.Requests;
 using FacebookCivicInsights.Data;
 using FacebookCivicInsights.Models;
@@ -100,6 +101,8 @@ namespace FacebookCivicInsights.Controllers.Dashboard
 
             foreach (ScrapedPage page in pages)
             {
+                Console.WriteLine(page.Name);
+
                 // Query the Facebook Graph API to get all posts in the given range, published only by
                 // the page.
                 var graphRequest = new PostsRequest
@@ -115,6 +118,15 @@ namespace FacebookCivicInsights.Controllers.Dashboard
                 foreach (ScrapedPost post in postsResponse.AllData().Flatten())
                 {
                     // Update the database with the new post.
+                    Location location = post.Place?.Location;
+                    if (location != null)
+                    {
+                        post.StringGeoPoint = $"{location.Latitude},{location.Longitude}";
+                    }
+                    else
+                    {
+                        post.StringGeoPoint = null;
+                    }
                     post.Page = page;
                     post.Created = DateTime.Now;
                     post.LastScraped = start;
@@ -125,6 +137,8 @@ namespace FacebookCivicInsights.Controllers.Dashboard
 
                 // Don't store the entire fan count history for the page belonging to each post.
                 page.FanCountHistory = page.FanCountHistory.Take(1).ToList();
+
+                Console.WriteLine(numberOfPosts);
             }
 
             var postScrape = new PostScrapeEvent
