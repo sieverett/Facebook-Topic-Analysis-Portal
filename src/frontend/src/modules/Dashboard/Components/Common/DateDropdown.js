@@ -58,8 +58,10 @@ class DateDropdown extends Component {
         <a href="#" className="btn btn-default btn-lg dropdown-toggle" data-toggle="dropdown"> {this.props.title} <span className="caret" /> </a>
         <ul className="dropdown-menu">
           {this.option('Now', 'now')}
+          <li role="separator" className="divider" />
           {this.option('1 hour ago', 'one-hour-ago')}
           {this.option('12 hours ago', 'twelve-hours-ago')}
+          <li role="separator" className="divider" />
           {this.option('Yesterday', 'one-day-ago')}
           {this.option('2 days ago', 'two-days-ago')}
           {this.option('1 week ago', 'one-week-ago')}
