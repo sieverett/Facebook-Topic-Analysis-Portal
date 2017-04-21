@@ -54,6 +54,9 @@ namespace FacebookCivicInsights
             });
             services.AddSingleton(postRepository);
 
+            var commentRepository = new ElasticSearchRepository<ScrapedComment>(elasticSearchUrl, elasticSearchDefaultIndex);
+            services.AddSingleton(commentRepository);
+
             var pageRepository = new ElasticSearchRepository<ScrapedPage>(elasticSearchUrl, elasticSearchDefaultIndex + "-page");
             services.AddSingleton(pageRepository);
 
