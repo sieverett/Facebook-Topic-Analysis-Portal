@@ -1,4 +1,7 @@
-﻿using Elasticsearch.Net;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Elasticsearch.Net;
 using Facebook;
 using Facebook.Models;
 using Facebook.Requests;
@@ -7,9 +10,6 @@ using FacebookCivicInsights.Models;
 using FacebookPostsScraper.Data;
 using FacebookPostsScraper.Data.Translator;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace FacebookCivicInsights.Controllers.Dashboard
 {
@@ -105,13 +105,11 @@ namespace FacebookCivicInsights.Controllers.Dashboard
 
                 // Query the Facebook Graph API to get all posts in the given range, published only by
                 // the page.
-                var graphRequest = new PostsRequest
+                var graphRequest = new PostsRequest(page.FacebookId, PostsRequestEdge.Posts)
                 {
-                    PageId = page.FacebookId,
                     Since = request.Since,
                     Until = request.Until,
-                    PaginationLimit = 100,
-                    Edge = PostsRequestEdge.Posts
+                    PaginationLimit = 100
                 };
 
                 PagedResponse<ScrapedPost> postsResponse = GraphClient.GetPosts<ScrapedPost>(graphRequest);

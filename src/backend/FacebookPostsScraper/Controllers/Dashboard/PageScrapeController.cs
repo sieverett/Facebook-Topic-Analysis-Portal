@@ -1,4 +1,7 @@
-﻿using Elasticsearch.Net;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Elasticsearch.Net;
 using Facebook;
 using Facebook.Models;
 using Facebook.Requests;
@@ -6,9 +9,6 @@ using FacebookCivicInsights.Data;
 using FacebookCivicInsights.Models;
 using FacebookPostsScraper.Data;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace FacebookCivicInsights.Controllers.Dashboard
 {
@@ -93,7 +93,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         private Page VerifyFacebookPage(string facebookId)
         {
             // Query the Facebook Graph API to make sur the page with the ID exists.
-            Page facebookPage = GraphClient.GetPage<Page>(new PageRequest { PageId = facebookId });
+            Page facebookPage = GraphClient.GetPage<Page>(new PageRequest(facebookId));
             if (facebookPage == null)
             {
                 throw new InvalidOperationException($"No such page {facebookId}");
@@ -155,7 +155,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
                 }
 
                 // Query the Facebook Graph API to get the page likes.
-                Page facebookPage = GraphClient.GetPage<Page>(new PageRequest { PageId = page.FacebookId });
+                Page facebookPage = GraphClient.GetPage<Page>(new PageRequest(page.FacebookId));
                 if (facebookPage == null)
                 {
                     throw new InvalidOperationException($"No such facebook page {page.Name}");

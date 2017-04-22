@@ -1,10 +1,10 @@
-﻿using Elasticsearch.Net;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
+using Elasticsearch.Net;
 using Facebook;
 using FacebookPostsScraper.Data;
 using Nest;
-using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
 
 namespace FacebookCivicInsights.Data
 {

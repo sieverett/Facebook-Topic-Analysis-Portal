@@ -1,12 +1,12 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System;
+using Facebook;
+using FacebookCivicInsights.Data;
+using FacebookCivicInsights.Models;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Facebook;
-using FacebookCivicInsights.Data;
-using FacebookCivicInsights.Models;
-using Nest;
 
 namespace FacebookCivicInsights
 {
@@ -60,7 +60,7 @@ namespace FacebookCivicInsights
             var pageRepository = new ElasticSearchRepository<ScrapedPage>(elasticSearchUrl, elasticSearchDefaultIndex + "-page");
             services.AddSingleton(pageRepository);
 
-            string facebookGraphAPIVersion = Configuration["facebook:graphAPIVersion"];
+            Version facebookGraphAPIVersion = new Version(Configuration["facebook:graphAPIVersion"]);
             string facebookAppId = Configuration["facebook:appId"];
             string facebookAppSecret = Configuration["facebook:appSecret"];
             var graphClient = new GraphClient(facebookGraphAPIVersion, facebookAppId, facebookAppSecret);

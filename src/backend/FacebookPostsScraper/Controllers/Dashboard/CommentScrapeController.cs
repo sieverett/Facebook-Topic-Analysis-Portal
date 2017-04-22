@@ -1,13 +1,13 @@
-﻿using Elasticsearch.Net;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Elasticsearch.Net;
 using Facebook;
 using Facebook.Models;
 using Facebook.Requests;
 using FacebookCivicInsights.Data;
 using FacebookCivicInsights.Models;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace FacebookCivicInsights.Controllers.Dashboard
 {
@@ -51,7 +51,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
             }
 
             DateTime now = DateTime.Now;
-            CommentsRequest graphRequest = new CommentsRequest { ParentId = request.PostId };
+            CommentsRequest graphRequest = new CommentsRequest(request.PostId);
             foreach (ScrapedComment comment in GraphClient.GetComments<ScrapedComment>(graphRequest))
             {
                 if (comment.Created == DateTime.MinValue)
