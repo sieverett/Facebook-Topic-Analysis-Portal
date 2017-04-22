@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using FacebookPostsScraper.Data.Scraper;
 
 namespace FacebookCivicInsights
 {
@@ -42,23 +43,6 @@ namespace FacebookCivicInsights
 
             // Register our repositories with ASP.NET Core to allow them to be injected
             // into our controllers. This preserves the same state between the controllers.
-            string elasticSearchUrl = Configuration["elasticsearch:url"];
-            string elasticSearchDefaultIndex = Configuration["elasticsearch:defaultIndex"];
-            var postRepository = new ElasticSearchRepository<ScrapedPost>(elasticSearchUrl, elasticSearchDefaultIndex + "-post", i =>
-            {
-                // We need to tell Elasticsearch explicitly that this field is a geopoint.
-                return i.Mappings(ms => ms.Map<ScrapedPost>(m => m.Properties(p =>
-                {
-                    return p.GeoPoint(g => g.Name("stringGeoPoint"));
-                })));
-            });
-            services.AddSingleton(postRepository);
-
-            var commentRepository = new ElasticSearchRepository<ScrapedComment>(elasticSearchUrl, elasticSearchDefaultIndex + "-comment");
-            services.AddSingleton(commentRepository);
-
-            var pageRepository = new ElasticSearchRepository<ScrapedPage>(elasticSearchUrl, elasticSearchDefaultIndex + "-page");
-            services.AddSingleton(pageRepository);
 
             Version facebookGraphAPIVersion = new Version(Configuration["facebook:graphAPIVersion"]);
             string facebookAppId = Configuration["facebook:appId"];
@@ -66,11 +50,23 @@ namespace FacebookCivicInsights
             var graphClient = new GraphClient(facebookGraphAPIVersion, facebookAppId, facebookAppSecret);
             services.AddSingleton(graphClient);
 
-            var postScrapeRepository = new ElasticSearchRepository<PostScrapeEvent>(elasticSearchUrl, elasticSearchDefaultIndex + "-post-event");
-            services.AddSingleton(postScrapeRepository);
+            string elasticSearchUrl = Configuration["elasticsearch:url"];
+            string elasticSearchDefaultIndex = Configuration["elasticsearch:defaultIndex"];
 
             var pageScrapeRepository = new ElasticSearchRepository<PageScrapeEvent>(elasticSearchUrl, elasticSearchDefaultIndex + "-page-event");
             services.AddSingleton(pageScrapeRepository);
+
+            var pageRepository = new PageScraper(elasticSearchUrl, elasticSearchDefaultIndex + "-page", graphClient);
+            services.AddSingleton(pageRepository);
+
+            var postScrapeRepository = new ElasticSearchRepository<PostScrapeEvent>(elasticSearchUrl, elasticSearchDefaultIndex + "-post-event");
+            services.AddSingleton(postScrapeRepository);
+
+            var postScraper = new PostScraper(elasticSearchUrl, elasticSearchDefaultIndex + "-post", graphClient);
+            services.AddSingleton(postScraper);
+
+            var commentScraper = new CommentScraper(elasticSearchUrl, elasticSearchDefaultIndex + "-comment", graphClient);
+            services.AddSingleton(commentScraper);
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)

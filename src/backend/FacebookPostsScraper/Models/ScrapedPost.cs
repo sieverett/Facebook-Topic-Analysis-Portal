@@ -9,5 +9,7 @@ namespace FacebookCivicInsights.Models
 
         public DateTime Created { get; set; }
         public DateTime LastScraped { get; set; }
+
+        public string GeoPoint { get; set; }
     }
 }

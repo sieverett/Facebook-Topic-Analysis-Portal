@@ -10,42 +10,38 @@ using FacebookCivicInsights.Models;
 using FacebookPostsScraper.Data;
 using FacebookPostsScraper.Data.Translator;
 using Microsoft.AspNetCore.Mvc;
+using FacebookPostsScraper.Data.Scraper;
+using System.Diagnostics;
 
 namespace FacebookCivicInsights.Controllers.Dashboard
 {
     [Route("/api/dashboard/post")]
     public class PostScrapeController : Controller
     {
-        private GraphClient GraphClient { get; }
-        private ElasticSearchRepository<ScrapedPost> PostRepository { get; }
-        private ElasticSearchRepository<ScrapedPage> PageRepository { get; }
+        private PostScraper PostScraper { get; }
+        private ElasticSearchRepository<ScrapedPage> PageScraper { get; }
         private ElasticSearchRepository<PostScrapeEvent> PostScrapeRepository { get; }
 
-        public PostScrapeController(
-            GraphClient graphClient,
-            ElasticSearchRepository<ScrapedPost> postRepository,
-            ElasticSearchRepository<ScrapedPage> pageRepository,
-            ElasticSearchRepository<PostScrapeEvent> postScrapeRepository)
+        public PostScrapeController(PostScraper postScraper, PageScraper pageScraper, ElasticSearchRepository<PostScrapeEvent> postScrapeRepository)
         {
-            GraphClient = graphClient;
-            PostRepository = postRepository;
-            PageRepository = pageRepository;
+            PostScraper = postScraper;
+            PageScraper = pageScraper;
             PostScrapeRepository = postScrapeRepository;
         }
 
         [HttpGet("{id}")]
-        public ScrapedPost GetPost(string id) => PostRepository.Get(id);
+        public ScrapedPost GetPost(string id) => PostScraper.Get(id);
 
         [HttpGet("all")]
         public PagedResponse AllPosts(int pageNumber, int pageSize, OrderingType? order, DateTime? since, DateTime? until)
         {
-            return PostRepository.All(pageNumber, pageSize, p => p.CreatedTime, order, p => p.CreatedTime, since, until);
+            return PostScraper.All(pageNumber, pageSize, p => p.CreatedTime, order, p => p.CreatedTime, since, until);
         }
 
         [HttpGet("export")]
         public IActionResult ExportPost(OrderingType? order, DateTime? since, DateTime? until)
         {
-            byte[] serialized = PostRepository.Export(p => p.CreatedTime, order, p => p.CreatedTime, since, until, CsvSerialization.MapPost);
+            byte[] serialized = PostScraper.Export(p => p.CreatedTime, order, p => p.CreatedTime, since, until, CsvSerialization.MapPost);
             return File(serialized, "text/csv", "export.csv");
         }
 
@@ -60,93 +56,36 @@ namespace FacebookCivicInsights.Controllers.Dashboard
 
         public class PostScrapeRequest
         {
+            public IEnumerable<string> Pages { get; set; }
             public DateTime Since { get; set; }
             public DateTime Until { get; set; }
-            public IEnumerable<string> Pages { get; set; }
         }
 
         [HttpPost("scrape/scrape")]
         public PostScrapeEvent ScrapePosts([FromBody]PostScrapeRequest request)
         {
-            if (request == null)
-            {
-                throw new InvalidOperationException("No request");
-            }
-            if (request.Since == DateTime.MinValue || request.Until == DateTime.MaxValue)
-            {
-                throw new InvalidOperationException("Invalid since or until");
-            }
-            if (request.Since >= request.Until)
-            {
-                throw new InvalidOperationException("Since greater than or equal to until");
-            }
-            if (request.Since >= DateTime.Now || request.Until >= DateTime.Now)
-            {
-                throw new InvalidOperationException("Since or until greater than or equal to now");
-            }
+            Debug.Assert(request != null);
 
             // If no specific pages were specified, scrape them all.
             IEnumerable<ScrapedPage> pages;
             if (request.Pages == null)
             {
-                pages = PageRepository.Paged().AllData();
+                pages = PageScraper.Paged().AllData();
             }
             else
             {
-                pages = request.Pages.Select(p => PageRepository.Get(p));
+                pages = request.Pages.Select(p => PageScraper.Get(p));
             }
 
-            DateTime start = DateTime.Now;
-            int numberOfPosts = 0;
-
-            foreach (ScrapedPage page in pages)
-            {
-                Console.WriteLine(page.Name);
-
-                // Query the Facebook Graph API to get all posts in the given range, published only by
-                // the page.
-                var graphRequest = new PostsRequest(page.FacebookId, PostsRequestEdge.Posts)
-                {
-                    Since = request.Since,
-                    Until = request.Until,
-                    PaginationLimit = 100
-                };
-
-                PagedResponse<ScrapedPost> postsResponse = GraphClient.GetPosts<ScrapedPost>(graphRequest);
-                foreach (ScrapedPost post in postsResponse.AllData())
-                {
-                    // Update the database with the new post.
-                    Location location = post.Place?.Location;
-                    if (location != null)
-                    {
-                        post.StringGeoPoint = $"{location.Latitude},{location.Longitude}";
-                    }
-                    else
-                    {
-                        post.StringGeoPoint = null;
-                    }
-                    post.Page = page;
-                    post.Created = DateTime.Now;
-                    post.LastScraped = start;
-                    PostRepository.Save(post, Refresh.False);
-
-                    numberOfPosts++;
-                }
-
-                // Don't store the entire fan count history for the page belonging to each post.
-                page.FanCountHistory = page.FanCountHistory.Take(1).ToList();
-
-                Console.WriteLine(numberOfPosts);
-            }
-
+            ScrapedPost[] posts = PostScraper.Scrape(pages, request.Since, request.Until).ToArray();
             var postScrape = new PostScrapeEvent
             {
                 Id = Guid.NewGuid().ToString(),
                 Since = request.Since,
                 Until = request.Until,
-                ImportStart = start,
+                ImportStart = posts.FirstOrDefault()?.Created ?? DateTime.Now,
                 ImportEnd = DateTime.Now,
-                NumberOfPosts = numberOfPosts,
+                NumberOfPosts = posts.Length,
                 Pages = pages
             };
 

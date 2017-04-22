@@ -9,34 +9,28 @@ using FacebookCivicInsights.Data;
 using FacebookCivicInsights.Models;
 using Microsoft.AspNetCore.Mvc;
 using Nest;
+using FacebookPostsScraper.Data.Scraper;
 
 namespace FacebookCivicInsights.Controllers.Dashboard
 {
     [Route("/api/dashboard/comment")]
     public class CommentScrapeController : Controller
     {
-        private GraphClient GraphClient { get; }
-        private ElasticSearchRepository<ScrapedPage> PageRepository { get; }
-        private ElasticSearchRepository<ScrapedComment> CommentRepository { get; }
+        private CommentScraper CommentScraper { get; }
 
-        public CommentScrapeController(
-            GraphClient graphClient,
-            ElasticSearchRepository<ScrapedPage> pageRepository,
-            ElasticSearchRepository<ScrapedComment> commentRepository)
+        public CommentScrapeController(CommentScraper commentScraper)
         {
-            GraphClient = graphClient;
-            PageRepository = pageRepository;
-            CommentRepository = commentRepository;
+            CommentScraper = commentScraper;
         }
 
         [HttpGet("{id}")]
-        public Comment GetComment(string id) => CommentRepository.Get(id);
+        public Comment GetComment(string id) => CommentScraper.Get(id);
 
         [HttpGet("all")]
         public PagedResponse AllComments(string pageId, int pageNumber, int pageSize, OrderingType? order)
         {
             Func<QueryContainerDescriptor<ScrapedComment>, QueryContainer> search = q => q.Term(t => t.Field(c => c.ParentId).Value(pageId));
-            return CommentRepository.All(pageNumber, pageSize, p => p.CreatedTime, order, search);
+            return CommentScraper.All(pageNumber, pageSize, p => p.CreatedTime, order, search);
         }
 
         public class CommentScrapeRequest
@@ -47,26 +41,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         [HttpPost("scrape")]
         public IEnumerable<ScrapedComment> ScrapeComments([FromBody]CommentScrapeRequest request)
         {
-            if (request?.PostId == null)
-            {
-                throw new InvalidOperationException("No request");
-            }
-
-            DateTime now = DateTime.Now;
-            CommentsRequest graphRequest = new CommentsRequest(request.PostId);
-            foreach (ScrapedComment comment in GraphClient.GetComments<ScrapedComment>(graphRequest).AllData())
-            {
-                if (comment.Created == DateTime.MinValue)
-                {
-                    comment.Created = now;
-                }
-                comment.LastScraped = now;
-                comment.ParentId = request.PostId;
-
-                CommentRepository.Save(comment, Refresh.False);
-
-                yield return comment;
-            }
+            return CommentScraper.Scrape(request?.PostId);
         }
     }
 }
