@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using Elasticsearch.Net;
 using Facebook;
-using Facebook.Models;
-using Facebook.Requests;
 using FacebookCivicInsights.Data;
 using FacebookCivicInsights.Models;
 using FacebookPostsScraper.Data;
 using FacebookPostsScraper.Data.Translator;
 using Microsoft.AspNetCore.Mvc;
 using FacebookPostsScraper.Data.Scraper;
-using System.Diagnostics;
 
 namespace FacebookCivicInsights.Controllers.Dashboard
 {
@@ -19,12 +16,14 @@ namespace FacebookCivicInsights.Controllers.Dashboard
     public class PostScrapeController : Controller
     {
         private PostScraper PostScraper { get; }
+        private CommentScraper CommentScraper { get; set; }
         private ElasticSearchRepository<ScrapedPage> PageScraper { get; }
         private ElasticSearchRepository<PostScrapeEvent> PostScrapeRepository { get; }
 
-        public PostScrapeController(PostScraper postScraper, PageScraper pageScraper, ElasticSearchRepository<PostScrapeEvent> postScrapeRepository)
+        public PostScrapeController(PostScraper postScraper, CommentScraper commentScraper, PageScraper pageScraper, ElasticSearchRepository<PostScrapeEvent> postScrapeRepository)
         {
             PostScraper = postScraper;
+            CommentScraper = commentScraper;
             PageScraper = pageScraper;
             PostScrapeRepository = postScrapeRepository;
         }
@@ -77,7 +76,15 @@ namespace FacebookCivicInsights.Controllers.Dashboard
                 pages = request.Pages.Select(p => PageScraper.Get(p));
             }
 
+            int numberOfComments = 0;
             ScrapedPost[] posts = PostScraper.Scrape(pages, request.Since, request.Until).ToArray();
+            foreach (ScrapedPost post in posts)
+            {
+                ScrapedComment[] comments = CommentScraper.Scrape(post.Id).ToArray();
+                numberOfComments += comments.Length;
+                Console.WriteLine(numberOfComments);
+            }
+
             var postScrape = new PostScrapeEvent
             {
                 Id = Guid.NewGuid().ToString(),
@@ -86,6 +93,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
                 ImportStart = posts.FirstOrDefault()?.Created ?? DateTime.Now,
                 ImportEnd = DateTime.Now,
                 NumberOfPosts = posts.Length,
+                NumberOfComments = numberOfComments,
                 Pages = pages
             };
 

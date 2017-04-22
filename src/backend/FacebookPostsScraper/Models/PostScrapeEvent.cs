@@ -14,5 +14,6 @@ namespace FacebookCivicInsights.Models
         public DateTime? Until { get; set; }
         public IEnumerable<ScrapedPage> Pages { get; set; }
         public int NumberOfPosts { get; set; }
+        public int NumberOfComments { get; set; }
     }
 }

@@ -9,12 +9,13 @@ import Panel from '../Common/Panel';
 class PostScrapeHistory extends Component {
   table = (scrapes) => {
     const mapping = [
-      { name: 'Date',  key: scrape => showDate(scrape.importStart)                                     },
-      { name: 'Since', key: scrape => showDate(scrape.since)                                           },
-      { name: 'Until', key: scrape => showDate(scrape.until)                                           },
-      { name: 'Pages', key: scrape => scrape.pages.length                                              },
-      { name: 'Posts', key: scrape => scrape.numberOfPosts                                             },
-      { name: 'Took',  key: scrape => formatDifference(scrape.importStart, scrape.importEnd) + ' mins' }
+      { name: 'Date',     key: scrape => showDate(scrape.importStart)                                     },
+      { name: 'Since',    key: scrape => showDate(scrape.since)                                           },
+      { name: 'Until',    key: scrape => showDate(scrape.until)                                           },
+      { name: 'Pages',    key: scrape => scrape.pages.length                                              },
+      { name: 'Posts',    key: scrape => scrape.numberOfPosts                                             },
+      { name: 'Comments', key: scrape => scrape.numberOfComments                                          },
+      { name: 'Took',     key: scrape => formatDifference(scrape.importStart, scrape.importEnd) + ' mins' }
     ];
 
     return (
