@@ -27,7 +27,7 @@ namespace FacebookPostsScraper.Data.Scraper
             GraphClient = graphClient;
         }
 
-        public IEnumerable<ScrapedPost> Scrape(IEnumerable<ScrapedPage> pages, DateTime since, DateTime until)
+        public IEnumerable<ScrapedPost> Scrape(ScrapedPage[] pages, DateTime since, DateTime until)
         {
             Debug.Assert(pages != null);
             Debug.Assert(since != DateTime.MinValue && since < DateTime.Now);
@@ -37,9 +37,10 @@ namespace FacebookPostsScraper.Data.Scraper
             DateTime start = DateTime.Now;
             int numberOfPosts = 0;
 
-            foreach (ScrapedPage page in pages)
+            for (int i = 0; i < pages.Length; i++)
             {
-                Console.WriteLine(page.Name);
+                ScrapedPage page = pages[i];
+                Console.WriteLine($"{i}/{pages.Length}: page.Name");
 
                 // Query the Facebook Graph API to get all posts in the given range, published only by
                 // the page.

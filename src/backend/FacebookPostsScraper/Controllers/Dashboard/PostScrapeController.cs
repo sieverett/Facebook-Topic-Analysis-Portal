@@ -65,16 +65,17 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         public PostScrapeEvent ScrapePosts([FromBody]PostScrapeRequest request)
         {
             Debug.Assert(request != null);
+            Console.WriteLine("Started Scraping");
 
             // If no specific pages were specified, scrape them all.
-            IEnumerable<ScrapedPage> pages;
+            ScrapedPage[] pages;
             if (request.Pages == null)
             {
-                pages = PageScraper.Paged().AllData();
+                pages = PageScraper.Paged().AllData().ToArray();
             }
             else
             {
-                pages = request.Pages.Select(p => PageScraper.Get(p));
+                pages = request.Pages.Select(p => PageScraper.Get(p)).ToArray();
             }
 
             int numberOfComments = 0;
@@ -85,6 +86,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
                 numberOfComments += comments.Length;
                 Console.WriteLine(numberOfComments);
             }
+            Console.WriteLine("Done Scraping");
 
             var postScrape = new PostScrapeEvent
             {

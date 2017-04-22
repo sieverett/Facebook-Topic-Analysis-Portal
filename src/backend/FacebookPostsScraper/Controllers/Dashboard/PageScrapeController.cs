@@ -35,6 +35,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
 
             foreach (ScrapedPage page in pages)
             {
+                Console.WriteLine(page.Name);
                 yield return Add(page);
             }
         }
