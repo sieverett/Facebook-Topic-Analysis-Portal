@@ -9,6 +9,7 @@ using FacebookPostsScraper.Data;
 using FacebookPostsScraper.Data.Translator;
 using Microsoft.AspNetCore.Mvc;
 using FacebookPostsScraper.Data.Scraper;
+using Nest;
 
 namespace FacebookCivicInsights.Controllers.Dashboard
 {
@@ -80,7 +81,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
             ScrapedPost[] posts = PostScraper.Scrape(pages, request.Since, request.Until).ToArray();
             foreach (ScrapedPost post in posts)
             {
-                ScrapedComment[] comments = CommentScraper.Scrape(post.Id).ToArray();
+                ScrapedComment[] comments = CommentScraper.Scrape(post).ToArray();
                 numberOfComments += comments.Length;
                 Console.WriteLine(numberOfComments);
             }
@@ -110,6 +111,27 @@ namespace FacebookCivicInsights.Controllers.Dashboard
             }
 
             return new GoogleTranslator().Translate("km", "en", post.Message);
+        }
+
+        [HttpGet("comment/{id}")]
+        public ScrapedComment GetComment(string id) => CommentScraper.Get(id);
+
+        [HttpGet("comment/all")]
+        public PagedResponse AllComments(string pageId, int pageNumber, int pageSize, OrderingType? order)
+        {
+            Func<QueryContainerDescriptor<ScrapedComment>, QueryContainer> search = q => q.Term(t => t.Field(c => c.Post.Id).Value(pageId));
+            return CommentScraper.All(pageNumber, pageSize, p => p.CreatedTime, order, search);
+        }
+
+        public class CommentScrapeRequest
+        {
+            public string PostId { get; set; }
+        }
+
+        [HttpPost("comment/scrape")]
+        public IEnumerable<ScrapedComment> ScrapeComments([FromBody]CommentScrapeRequest request)
+        {
+            return CommentScraper.Scrape(PostScraper.Get(request?.PostId));
         }
     }
 }

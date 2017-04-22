@@ -1,5 +1,6 @@
 ﻿using Elasticsearch.Net;
 using Facebook;
+using Facebook.Models;
 using Facebook.Requests;
 using FacebookCivicInsights.Data;
 using FacebookCivicInsights.Models;
@@ -18,12 +19,12 @@ namespace FacebookPostsScraper.Data.Scraper
             GraphClient = graphClient;
         }
 
-        public IEnumerable<ScrapedComment> Scrape(string parentId)
+        public IEnumerable<ScrapedComment> Scrape(Post post)
         {
-            Debug.Assert(parentId != null);
+            Debug.Assert(post != null);
 
             DateTime now = DateTime.Now;
-            CommentsRequest graphRequest = new CommentsRequest(parentId) { PaginationLimit = 100 };
+            CommentsRequest graphRequest = new CommentsRequest(post.Id) { PaginationLimit = 100 };
             foreach (ScrapedComment comment in GraphClient.GetComments<ScrapedComment>(graphRequest).AllData())
             {
                 if (comment.Created == DateTime.MinValue)
@@ -31,7 +32,7 @@ namespace FacebookPostsScraper.Data.Scraper
                     comment.Created = now;
                 }
                 comment.LastScraped = now;
-                comment.ParentId = parentId;
+                comment.Post = post;
 
                 Save(comment, Refresh.False);
 

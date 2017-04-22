@@ -5,7 +5,7 @@ namespace FacebookCivicInsights.Models
 {
     public class ScrapedComment : Comment
     {
-        public string ParentId { get; set; }
+        public Post Post { get; set; }
 
         public DateTime Created { get; set; }
         public DateTime LastScraped { get; set; }
