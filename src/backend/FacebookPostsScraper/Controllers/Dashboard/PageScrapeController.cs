@@ -139,7 +139,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
             IEnumerable<ScrapedPage> pages;
             if (request == null)
             {
-                pages = PageRepository.Paged().AllData().Flatten();
+                pages = PageRepository.Paged().AllData();
             }
             else
             {

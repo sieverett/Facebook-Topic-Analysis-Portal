@@ -144,9 +144,17 @@ namespace FacebookCivicInsights.Data
             Expression<Func<T, object>> orderPath, OrderingType? order,
             Expression<Func<T, object>> searchPath, DateTime? since, DateTime? until) where T : class, new()
         {
+            Func<QueryContainerDescriptor<T>, QueryContainer> search = GetSearch(searchPath, since, until);
+            return repository.All(pageNumber, pageSize, orderPath, order, search);
+        }
+
+        public static PagedResponse<T> All<T>(this ElasticSearchRepository<T> repository,
+            int pageNumber, int pageSize,
+            Expression<Func<T, object>> orderPath, OrderingType? order,
+            Func<QueryContainerDescriptor<T>, QueryContainer> search) where T : class, new()
+        {
             var paging = new PagedResponse { PageNumber = pageNumber, PageSize = pageSize };
             Ordering<T> ordering = GetOrdering(orderPath, order);
-            Func<QueryContainerDescriptor<T>, QueryContainer> search = GetSearch(searchPath, since, until);
 
             return repository.Paged(paging, ordering, search);
         }
@@ -165,7 +173,7 @@ namespace FacebookCivicInsights.Data
             Func<QueryContainerDescriptor<T>, QueryContainer> search = GetSearch(searchPath, since, until);
 
             PagedResponse<T> response = repository.Paged(paging, ordering, search);
-            IEnumerable<T> data = response.AllData().Flatten();
+            IEnumerable<T> data = response.AllData();
 
             return CsvSerialization.Serialize(data, mapping);
         }

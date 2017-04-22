@@ -89,7 +89,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
             IEnumerable<ScrapedPage> pages;
             if (request.Pages == null)
             {
-                pages = PageRepository.Paged().AllData().Flatten();
+                pages = PageRepository.Paged().AllData();
             }
             else
             {
@@ -113,7 +113,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
                 };
 
                 PagedResponse<ScrapedPost> postsResponse = GraphClient.GetPosts<ScrapedPost>(graphRequest);
-                foreach (ScrapedPost post in postsResponse)
+                foreach (ScrapedPost post in postsResponse.AllData())
                 {
                     // Update the database with the new post.
                     Location location = post.Place?.Location;

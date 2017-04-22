@@ -52,7 +52,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
 
             DateTime now = DateTime.Now;
             CommentsRequest graphRequest = new CommentsRequest(request.PostId);
-            foreach (ScrapedComment comment in GraphClient.GetComments<ScrapedComment>(graphRequest))
+            foreach (ScrapedComment comment in GraphClient.GetComments<ScrapedComment>(graphRequest).AllData())
             {
                 if (comment.Created == DateTime.MinValue)
                 {
