@@ -23,7 +23,7 @@ namespace FacebookPostsScraper.Data.Scraper
             Debug.Assert(parentId != null);
 
             DateTime now = DateTime.Now;
-            CommentsRequest graphRequest = new CommentsRequest(parentId);
+            CommentsRequest graphRequest = new CommentsRequest(parentId) { PaginationLimit = 100 };
             foreach (ScrapedComment comment in GraphClient.GetComments<ScrapedComment>(graphRequest).AllData())
             {
                 if (comment.Created == DateTime.MinValue)
