@@ -8,6 +8,7 @@ using Facebook.Requests;
 using FacebookCivicInsights.Data;
 using FacebookCivicInsights.Models;
 using Microsoft.AspNetCore.Mvc;
+using Nest;
 
 namespace FacebookCivicInsights.Controllers.Dashboard
 {
@@ -34,7 +35,8 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         [HttpGet("all")]
         public PagedResponse AllComments(string pageId, int pageNumber, int pageSize, OrderingType? order)
         {
-            return CommentRepository.All(pageNumber, pageSize, p => p.CreatedTime, order, p => p.CreatedTime, null, null);
+            Func<QueryContainerDescriptor<ScrapedComment>, QueryContainer> search = q => q.Term(t => t.Field(c => c.ParentId).Value(pageId));
+            return CommentRepository.All(pageNumber, pageSize, p => p.CreatedTime, order, search);
         }
 
         public class CommentScrapeRequest
