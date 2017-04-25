@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Elasticsearch.Net;
 using Facebook;
-using Facebook.Models;
 using Facebook.Requests;
 using FacebookCivicInsights.Data;
 using FacebookCivicInsights.Models;
+using Nest;
+using Facebook.Models;
 
 namespace FacebookPostsScraper.Data.Scraper
 {
@@ -15,67 +15,50 @@ namespace FacebookPostsScraper.Data.Scraper
     {
         private GraphClient GraphClient { get; }
 
-        public PageScraper(string url, string defaultIndex, GraphClient graphClient) : base(url, defaultIndex)
+        public PageScraper(ConnectionSettings settings, string defaultIndex, GraphClient graphClient) : base(settings, defaultIndex)
         {
             GraphClient = graphClient;
         }
 
-        public Page VerifyFacebookPage(string facebookId)
+        public ScrapedPage Scrape(string pageId, bool save)
         {
-            // Query the Facebook Graph API to make sur the page with the ID exists.
-            Page facebookPage = GraphClient.GetPage<Page>(new PageRequest(facebookId));
-            if (facebookPage == null)
-            {
-                throw new InvalidOperationException($"No such page {facebookId}");
-            }
+            // Query the Facebook Graph API to get the page likes.
+            Page facebookPage = GraphClient.GetPage<Page>(new PageRequest(pageId));
 
-            if (Paged(search: q => q.Term("facebookId", facebookId)).Data.Any())
+            var scrapedPage = new ScrapedPage
             {
-                throw new InvalidOperationException($"Page already exists {facebookId}");
-            }
+                FacebookId = facebookPage.Id,
+                Name = facebookPage.Name,
+                Category = facebookPage.Category,
+                FanCount = facebookPage.FanCount
+            };
+            scrapedPage.Date = DateTime.Now;
 
-            return facebookPage;
+            return save ? Save(scrapedPage, Refresh.False) : scrapedPage;
         }
 
         public IEnumerable<ScrapedPage> Scrape(IEnumerable<string> pageIds)
         {
-            // If no specific pages were specified, scrape them all.
-            IEnumerable<ScrapedPage> pages;
-            if (pageIds == null)
+            foreach (string page in pageIds)
             {
-                pages = Paged().AllData();
+                yield return Scrape(page, save: true);
             }
-            else
+        }
+
+        public ScrapedPage Closest(string displayName, DateTime date)
+        {
+            // Get all the pages with the display name within +- 1 week of the specified date.
+            IEnumerable<ScrapedPage> pages = Paged(search: q =>
             {
-                pages = pageIds.Select(id => Get(id));
-            }
-
-            DateTime start = DateTime.Now;
-
-            foreach (ScrapedPage page in pages)
-            {
-                Debug.Assert(page != null);
-
-                // Query the Facebook Graph API to get the page likes.
-                Page facebookPage = GraphClient.GetPage<Page>(new PageRequest(page.FacebookId));
-                Debug.Assert(facebookPage != null);
-
-                // Update the database with the new information.
-                page.FirstScrape = page.FirstScrape ?? start;
-                page.LatestScrape = start;
-                page.FanCountHistory.Insert(0, new DatedFanCount
+                return q.Match(m => m.Field("displayName").Query(displayName)) && q.DateRange(d =>
                 {
-                    Date = start,
-                    FanCount = facebookPage.FanCount
+                    return d.Field("date").LessThanOrEquals(date.AddDays(3)).GreaterThanOrEquals(date.AddDays(-3));
                 });
+            }).Data.Where(p => p.DisplayName == displayName);
 
-                Save(page, Refresh.False);
-
-                // Don't store the entire fan count history for each page on each scrape.
-                page.FanCountHistory = new List<DatedFanCount> { page.FanCountHistory.First() };
-
-                yield return page;
-            }
+            // Get the closest date to the specified date.
+            IEnumerable<ScrapedPage> closestPages = pages.OrderBy(p => (p.Date - date).Duration());
+            return closestPages.FirstOrDefault();
         }
     }
 }

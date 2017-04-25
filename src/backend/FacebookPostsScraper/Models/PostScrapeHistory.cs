@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace FacebookCivicInsights.Models
 {
-    public class PostScrapeEvent
+    public class PostScrapeHistory
     {
         public string Id { get; set; }
 
@@ -12,7 +12,7 @@ namespace FacebookCivicInsights.Models
 
         public DateTime? Since { get; set; }
         public DateTime? Until { get; set; }
-        public IEnumerable<ScrapedPage> Pages { get; set; }
+        public IEnumerable<PageMetadata> Pages { get; set; }
         public int NumberOfPosts { get; set; }
         public int NumberOfComments { get; set; }
     }

@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using FacebookPostsScraper.Data.Scraper;
+using Nest;
 
 namespace FacebookCivicInsights
 {
@@ -53,19 +54,28 @@ namespace FacebookCivicInsights
             string elasticSearchUrl = Configuration["elasticsearch:url"];
             string elasticSearchDefaultIndex = Configuration["elasticsearch:defaultIndex"];
 
-            var pageScrapeRepository = new ElasticSearchRepository<PageScrapeEvent>(elasticSearchUrl, elasticSearchDefaultIndex + "-page-event");
-            services.AddSingleton(pageScrapeRepository);
+            string elasticSearchUserName = Configuration["elasticsearch:user"];
+            string elasticSearchPassword = Configuration["elasticsearch:password"];
 
-            var pageRepository = new PageScraper(elasticSearchUrl, elasticSearchDefaultIndex + "-page", graphClient);
-            services.AddSingleton(pageRepository);
+            var node = new Uri(elasticSearchUrl);
+            Func<ConnectionSettings> settings = () => new ConnectionSettings(node).BasicAuthentication(elasticSearchUserName, elasticSearchPassword);
 
-            var postScrapeRepository = new ElasticSearchRepository<PostScrapeEvent>(elasticSearchUrl, elasticSearchDefaultIndex + "-post-event");
+            var pageMetadataRepository = new ElasticSearchRepository<PageMetadata>(settings(), elasticSearchDefaultIndex + "-metadata-page");
+            services.AddSingleton(pageMetadataRepository);
+
+            var pageScrapeHistoryRepository = new ElasticSearchRepository<PageScrapeHistory>(settings(), elasticSearchDefaultIndex + "-metadata-pagescrape");
+            services.AddSingleton(pageScrapeHistoryRepository);
+
+            var postScrapeRepository = new ElasticSearchRepository<PostScrapeHistory>(settings(), elasticSearchDefaultIndex + "-metadata-postscrape");
             services.AddSingleton(postScrapeRepository);
 
-            var postScraper = new PostScraper(elasticSearchUrl, elasticSearchDefaultIndex + "-post", graphClient);
+            var pageScraper = new PageScraper(settings(), elasticSearchDefaultIndex + "-page", graphClient);
+            services.AddSingleton(pageScraper);
+
+            var postScraper = new PostScraper(settings(), elasticSearchDefaultIndex + "-post", pageScraper, graphClient);
             services.AddSingleton(postScraper);
 
-            var commentScraper = new CommentScraper(elasticSearchUrl, elasticSearchDefaultIndex + "-comment", graphClient);
+            var commentScraper = new CommentScraper(settings(), elasticSearchDefaultIndex + "-comment", graphClient);
             services.AddSingleton(commentScraper);
         }
 

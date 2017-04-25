@@ -6,27 +6,29 @@ using Facebook;
 using FacebookCivicInsights.Data;
 using FacebookCivicInsights.Models;
 using FacebookPostsScraper.Data;
-using FacebookPostsScraper.Data.Translator;
 using Microsoft.AspNetCore.Mvc;
 using FacebookPostsScraper.Data.Scraper;
-using Nest;
+using FacebookPostsScraper.Data.Importer;
+using System.IO;
 
 namespace FacebookCivicInsights.Controllers.Dashboard
 {
-    [Route("/api/dashboard/post")]
+    [Route("/api/dashboard/scrape/post")]
     public class PostScrapeController : Controller
     {
         private PostScraper PostScraper { get; }
-        private CommentScraper CommentScraper { get; set; }
-        private ElasticSearchRepository<ScrapedPage> PageScraper { get; }
-        private ElasticSearchRepository<PostScrapeEvent> PostScrapeRepository { get; }
+        private CommentScraper CommentScraper { get; }
+        private PageScraper PageScraper { get; }
+        private ElasticSearchRepository<PageMetadata> PageMetadataRepository { get; }
+        private ElasticSearchRepository<PostScrapeHistory> PostScrapeHistoryRepository { get; }
 
-        public PostScrapeController(PostScraper postScraper, CommentScraper commentScraper, PageScraper pageScraper, ElasticSearchRepository<PostScrapeEvent> postScrapeRepository)
+        public PostScrapeController(PostScraper postScraper, CommentScraper commentScraper, PageScraper pageScraper, ElasticSearchRepository<PageMetadata> pageMetadataRepository, ElasticSearchRepository<PostScrapeHistory> postScrapeHistoryRepository)
         {
             PostScraper = postScraper;
             CommentScraper = commentScraper;
             PageScraper = pageScraper;
-            PostScrapeRepository = postScrapeRepository;
+            PageMetadataRepository = pageMetadataRepository;
+            PostScrapeHistoryRepository = postScrapeHistoryRepository;
         }
 
         [HttpGet("{id}")]
@@ -46,12 +48,12 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         }
 
         [HttpGet("scrape/{id}")]
-        public PostScrapeEvent GetScrape(string id) => PostScrapeRepository.Get(id);
+        public PostScrapeHistory GetScrape(string id) => PostScrapeHistoryRepository.Get(id);
 
         [HttpGet("scrape/all")]
         public PagedResponse AllScrapes(int pageNumber, int pageSize, OrderingType? order, DateTime? since, DateTime? until)
         {
-            return PostScrapeRepository.All(pageNumber, pageSize, p => p.ImportStart, order, p => p.ImportStart, since, until);
+            return PostScrapeHistoryRepository.All(pageNumber, pageSize, p => p.ImportStart, order, p => p.ImportStart, since, until);
         }
 
         public class PostScrapeRequest
@@ -62,20 +64,20 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         }
 
         [HttpPost("scrape/scrape")]
-        public PostScrapeEvent ScrapePosts([FromBody]PostScrapeRequest request)
+        public PostScrapeHistory ScrapePosts([FromBody]PostScrapeRequest request)
         {
             Debug.Assert(request != null);
             Console.WriteLine("Started Scraping");
 
             // If no specific pages were specified, scrape them all.
-            ScrapedPage[] pages;
+            PageMetadata[] pages;
             if (request.Pages == null)
             {
-                pages = PageScraper.Paged().AllData().ToArray();
+                pages = PageMetadataRepository.Paged().AllData().ToArray();
             }
             else
             {
-                pages = request.Pages.Select(p => PageScraper.Get(p)).ToArray();
+                pages = request.Pages.Select(p => PageMetadataRepository.Get(p)).ToArray();
             }
 
             int numberOfComments = 0;
@@ -88,52 +90,29 @@ namespace FacebookCivicInsights.Controllers.Dashboard
             }
             Console.WriteLine("Done Scraping");
 
-            var postScrape = new PostScrapeEvent
+            var postScrape = new PostScrapeHistory
             {
                 Id = Guid.NewGuid().ToString(),
                 Since = request.Since,
                 Until = request.Until,
-                ImportStart = posts.FirstOrDefault()?.Created ?? DateTime.Now,
+                ImportStart = posts.FirstOrDefault()?.Scraped ?? DateTime.Now,
                 ImportEnd = DateTime.Now,
                 NumberOfPosts = posts.Length,
                 NumberOfComments = numberOfComments,
                 Pages = pages
             };
 
-            return PostScrapeRepository.Save(postScrape);
+            return PostScrapeHistoryRepository.Save(postScrape);
         }
 
-        [HttpGet("translate/{postId}")]
-        public GoogleTranslatorResult Translate(string postId)
+        [HttpGet("import")]
+        public IEnumerable<ScrapedPost> ImportPages()
         {
-            ScrapedPost post = GetPost(postId);
-            if (post == null)
-            {
-                throw new InvalidOperationException($"No such post {postId}");
-            }
+            var importer = new ScrapeImporter(PageScraper, PostScraper);
+            IEnumerable<string> files = Directory.EnumerateFiles("C:\\Users\\hughb\\Documents\\TAF\\Data", "*.csv", SearchOption.AllDirectories);
+            IEnumerable<string> fanCountFiles = files.Where(f => f.Contains("DedooseChartExcerpts"));
 
-            return new GoogleTranslator().Translate("km", "en", post.Message);
-        }
-
-        [HttpGet("comment/{id}")]
-        public ScrapedComment GetComment(string id) => CommentScraper.Get(id);
-
-        [HttpGet("comment/all")]
-        public PagedResponse AllComments(string pageId, int pageNumber, int pageSize, OrderingType? order)
-        {
-            Func<QueryContainerDescriptor<ScrapedComment>, QueryContainer> search = q => q.Term(t => t.Field(c => c.Post.Id).Value(pageId));
-            return CommentScraper.All(pageNumber, pageSize, p => p.CreatedTime, order, search);
-        }
-
-        public class CommentScrapeRequest
-        {
-            public string PostId { get; set; }
-        }
-
-        [HttpPost("comment/scrape")]
-        public IEnumerable<ScrapedComment> ScrapeComments([FromBody]CommentScrapeRequest request)
-        {
-            return CommentScraper.Scrape(PostScraper.Get(request?.PostId));
+            return importer.ImportPosts(fanCountFiles);
         }
     }
 }

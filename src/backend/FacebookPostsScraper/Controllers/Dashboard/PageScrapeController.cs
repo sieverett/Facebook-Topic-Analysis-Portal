@@ -1,130 +1,84 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using Elasticsearch.Net;
 using Facebook;
-using Facebook.Models;
-using Facebook.Requests;
 using FacebookCivicInsights.Data;
 using FacebookCivicInsights.Models;
 using FacebookPostsScraper.Data;
 using Microsoft.AspNetCore.Mvc;
 using FacebookPostsScraper.Data.Scraper;
+using FacebookPostsScraper.Data.Importer;
 
 namespace FacebookCivicInsights.Controllers.Dashboard
 {
-    [Route("/api/dashboard/page")]
+    [Route("/api/dashboard/scrape/page")]
     public class PageScrapeController : Controller
     {
         private PageScraper PageScraper { get; }
-        private ElasticSearchRepository<PageScrapeEvent> PageScrapeRepository { get; }
+        private ElasticSearchRepository<PageScrapeHistory> PageScrapeHistoryRepository { get; }
 
-        public PageScrapeController(PageScraper pageScraper, ElasticSearchRepository<PageScrapeEvent> pageScrapeRepository)
+        public PageScrapeController(PageScraper pageScraper, ElasticSearchRepository<PageScrapeHistory> pageScrapeRepository)
         {
             PageScraper = pageScraper;
-            PageScrapeRepository = pageScrapeRepository;
-        }
-
-        [HttpPost("new/multiple")]
-        public IEnumerable<ScrapedPage> AddMany([FromBody]IEnumerable<ScrapedPage> pages)
-        {
-            if (pages == null)
-            {
-                throw new InvalidOperationException("No pages");
-            }
-
-            foreach (ScrapedPage page in pages)
-            {
-                Console.WriteLine(page.Name);
-                yield return Add(page);
-            }
-        }
-
-        [HttpPost("new")]
-        public ScrapedPage Add([FromBody]ScrapedPage page)
-        {
-            DateTime now = DateTime.Now;
-
-            // Get the Facebook page and save the page.s
-            Page facebookPage = PageScraper.VerifyFacebookPage(page.FacebookId);
-            page.Id = Guid.NewGuid().ToString();
-            page.FacebookId = facebookPage.Id;
-            page.FirstScrape = now;
-            page.LatestScrape = now;
-
-            page.FanCountHistory.Add(new DatedFanCount
-            {
-                Date = now,
-                FanCount = facebookPage.FanCount
-            });
-
-            page.Created = now;
-            PageScraper.Save(page);
-
-            return page;
+            PageScrapeHistoryRepository = pageScrapeRepository;
         }
 
         [HttpGet("{id}")]
-        public ScrapedPage Get(string id) => PageScraper.Get(id);
-
-        [HttpPatch("{id}")]
-        public ScrapedPage Update(string id, [FromBody]ScrapedPage updatedPage)
-        {
-            if (updatedPage == null)
-            {
-                throw new InvalidOperationException("No updated page");
-            }
-
-            ScrapedPage page = Get(id);
-            if (page == null)
-            {
-                throw new InvalidOperationException("No such page");
-            }
-
-            page.Name = updatedPage.Name;
-            page.FacebookId = PageScraper.VerifyFacebookPage(page.FacebookId).Id;
-
-            return PageScraper.Save(page);
-        }
+        public ScrapedPage GetScrape(string id) => PageScraper.Get(id);
 
         [HttpGet("all")]
-        public PagedResponse AllPages(int pageNumber, int pageSize, OrderingType? order, DateTime? since, DateTime? until)
-        {
-            return PageScraper.All(pageNumber, pageSize, p => p.Created, order, p => p.Created, since, until);
-        }
-
-        [HttpDelete("{id}")]
-        public ScrapedPage Delete(string id) => PageScraper.Delete(id);
-
-        [HttpGet("scrape/{id}")]
-        public PageScrapeEvent GetScrape(string id) => PageScrapeRepository.Get(id);
-
-        [HttpGet("scrape/all")]
         public PagedResponse AllScrapes(int pageNumber, int pageSize, OrderingType? order, DateTime? since, DateTime? until)
         {
-            return PageScrapeRepository.All(pageNumber, pageSize, p => p.ImportStart, order, p => p.ImportStart, since, until);
+            return PageScraper.All(pageNumber, pageSize, p => p.Date, order, p => p.Date, since, until);
         }
 
-        [HttpGet("scrape/export")]
-        public IActionResult ExportPost(OrderingType? order, DateTime? since, DateTime? until)
+        [HttpPost("scrape")]
+        public PageScrapeHistory ScrapePages([FromBody]IEnumerable<string> request)
         {
-            byte[] serialized = PageScrapeRepository.Export(p => p.ImportStart, order, p => p.ImportStart, since, until, CsvSerialization.MapPageScrape);
-            return File(serialized, "text/csv", "export.csv");
-        }
-
-        [HttpPost("scrape/scrape")]
-        public PageScrapeEvent ScrapePages([FromBody]IEnumerable<string> request)
-        {
+            DateTime now = DateTime.Now;
             ScrapedPage[] pages = PageScraper.Scrape(request).ToArray();
-            var pageScrapeEvent = new PageScrapeEvent
+            var pageScrapeHistory = new PageScrapeHistory
             {
                 Id = Guid.NewGuid().ToString(),
-                ImportStart = pages.FirstOrDefault()?.LatestScrape ?? DateTime.Now,
+                ImportStart = now,
                 ImportEnd = DateTime.Now,
                 Pages = pages
             };
 
-            return PageScrapeRepository.Save(pageScrapeEvent);
+            return PageScrapeHistoryRepository.Save(pageScrapeHistory);
+        }
+
+        [HttpGet("import")]
+        public IEnumerable<ScrapedPage> ImportPages()
+        {
+            var importer = new ScrapeImporter(PageScraper, null);
+            IEnumerable<string> files = Directory.EnumerateFiles("C:\\Users\\hughb\\Documents\\TAF\\Data", "*.csv", SearchOption.AllDirectories);
+            IEnumerable<string> fanCountFiles = files.Where(f => f.Contains("count"));
+
+            return importer.ImportPages(fanCountFiles);
+        }
+
+        [HttpGet("closest/{displayName}/{date}")]
+        public ScrapedPage Closest(string displayName, DateTime date)
+        {
+            return PageScraper.Closest(displayName, date);
+        }
+
+        [HttpGet("history/{id}")]
+        public PageScrapeHistory GetScrapeHistory(string id) => PageScrapeHistoryRepository.Get(id);
+
+        [HttpGet("history/all")]
+        public PagedResponse AllScrapeHistory(int pageNumber, int pageSize, OrderingType? order, DateTime? since, DateTime? until)
+        {
+            return PageScrapeHistoryRepository.All(pageNumber, pageSize, p => p.ImportStart, order, p => p.ImportStart, since, until);
+        }
+
+        [HttpGet("history/export")]
+        public IActionResult ExportPages(OrderingType? order, DateTime? since, DateTime? until)
+        {
+            byte[] serialized = PageScrapeHistoryRepository.Export(p => p.ImportStart, order, p => p.ImportStart, since, until, CsvSerialization.MapPageScrape);
+            return File(serialized, "text/csv", "export.csv");
         }
     }
 }

@@ -8,14 +8,16 @@ using Facebook.Models;
 using Facebook.Requests;
 using FacebookCivicInsights.Data;
 using FacebookCivicInsights.Models;
+using Nest;
 
 namespace FacebookPostsScraper.Data.Scraper
 {
     public class PostScraper : ElasticSearchRepository<ScrapedPost>
     {
+        private PageScraper PageScraper { get; }
         private GraphClient GraphClient { get; }
 
-        public PostScraper(string url, string defaultIndex, GraphClient graphClient) : base(url, defaultIndex, i =>
+        public PostScraper(ConnectionSettings settings, string defaultIndex, PageScraper pageScraper, GraphClient graphClient) : base(settings, defaultIndex, i =>
         {
             // We need to tell Elasticsearch explicitly that this field is a geopoint.
             return i.Mappings(ms => ms.Map<ScrapedPost>(m => m.Properties(p =>
@@ -24,10 +26,11 @@ namespace FacebookPostsScraper.Data.Scraper
             })));
         })
         {
+            PageScraper = pageScraper;
             GraphClient = graphClient;
         }
 
-        public IEnumerable<ScrapedPost> Scrape(ScrapedPage[] pages, DateTime since, DateTime until)
+        public IEnumerable<ScrapedPost> Scrape(PageMetadata[] pages, DateTime since, DateTime until)
         {
             Debug.Assert(pages != null);
             Debug.Assert(since != DateTime.MinValue && since < DateTime.Now);
@@ -39,7 +42,7 @@ namespace FacebookPostsScraper.Data.Scraper
 
             for (int i = 0; i < pages.Length; i++)
             {
-                ScrapedPage page = pages[i];
+                PageMetadata page = pages[i];
                 Console.WriteLine($"{i}/{pages.Length}: page.Name");
 
                 // Query the Facebook Graph API to get all posts in the given range, published only by
@@ -54,19 +57,7 @@ namespace FacebookPostsScraper.Data.Scraper
                 PagedResponse<ScrapedPost> postsResponse = GraphClient.GetPosts<ScrapedPost>(graphRequest);
                 foreach (ScrapedPost post in postsResponse.AllData())
                 {
-                    // Update the database with the new post.
-                    Location location = post.Place?.Location;
-                    if (location != null)
-                    {
-                        post.GeoPoint = $"{location.Latitude},{location.Longitude}";
-                    }
-                    else
-                    {
-                        post.GeoPoint = null;
-                    }
-                    post.Page = page;
-                    post.Created = DateTime.Now;
-                    post.LastScraped = start;
+                    UpdateMetadata(post);
                     Save(post, Refresh.False);
 
                     numberOfPosts++;
@@ -78,6 +69,31 @@ namespace FacebookPostsScraper.Data.Scraper
 
                 Console.WriteLine(numberOfPosts);
             }
+        }
+
+        public ScrapedPost ScrapePost(string postId) => GraphClient.GetPost<ScrapedPost>(new PostRequest(postId));
+        
+        public void UpdateMetadata(ScrapedPost post)
+        {
+            // Update the database with the new post.
+            Location location = post.Place?.Location;
+            if (location != null)
+            {
+                post.GeoPoint = $"{location.Latitude},{location.Longitude}";
+            }
+            else
+            {
+                post.GeoPoint = null;
+            }
+
+            ScrapedPage scrapedPage = PageScraper.Closest(post.Page.DisplayName, post.CreatedTime);
+            post.Page = scrapedPage;
+
+            if (post.Scraped != DateTime.MinValue)
+            {
+                post.Scraped = DateTime.Now;
+            }
+            post.LastScraped = DateTime.Now;
         }
     }
 }

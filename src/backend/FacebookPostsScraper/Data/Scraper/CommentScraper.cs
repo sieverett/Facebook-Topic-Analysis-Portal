@@ -1,12 +1,13 @@
-﻿using Elasticsearch.Net;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using Elasticsearch.Net;
 using Facebook;
 using Facebook.Models;
 using Facebook.Requests;
 using FacebookCivicInsights.Data;
 using FacebookCivicInsights.Models;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+using Nest;
 
 namespace FacebookPostsScraper.Data.Scraper
 {
@@ -14,7 +15,7 @@ namespace FacebookPostsScraper.Data.Scraper
     {
         private GraphClient GraphClient { get; }
 
-        public CommentScraper(string url, string defaultIndex, GraphClient graphClient) : base(url, defaultIndex)
+        public CommentScraper(ConnectionSettings settings, string defaultIndex, GraphClient graphClient) : base(settings, defaultIndex)
         {
             GraphClient = graphClient;
         }

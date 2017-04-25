@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace FacebookCivicInsights.Models
 {
-    public class PageScrapeEvent
+    public class PageScrapeHistory
     {
         public string Id { get; set; }
 

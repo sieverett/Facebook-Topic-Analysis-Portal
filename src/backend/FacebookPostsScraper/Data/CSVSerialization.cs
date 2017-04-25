@@ -47,17 +47,20 @@ namespace FacebookPostsScraper.Data
             return expanded;
         }
 
-        public static dynamic MapPageScrape(PageScrapeEvent scrape)
+        public static dynamic MapPageScrape(PageScrapeHistory scrape)
         {
             dynamic expanded = new ExpandoObject();
+
+            // TODO
+            /*
             IDictionary<string, object> expandedDictionary = (IDictionary<string, object>)expanded;
 
             expanded.Date = scrape.ImportStart;
 
-            foreach (ScrapedPage page in scrape.Pages)
+            foreach (PageMetadata page in scrape.Pages)
             {
                 expandedDictionary.Add(page.Name, page.FanCount);
-            }
+            }*/
 
             return expanded;
         }

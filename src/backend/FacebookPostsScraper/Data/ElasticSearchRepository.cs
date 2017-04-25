@@ -13,10 +13,9 @@ namespace FacebookCivicInsights.Data
         private string DefaultIndex { get; }
         private ElasticClient Client { get; }
 
-        public ElasticSearchRepository(string url, string defaultIndex, Func<CreateIndexDescriptor, ICreateIndexRequest> createIndex = null)
+        public ElasticSearchRepository(ConnectionSettings settings, string defaultIndex, Func<CreateIndexDescriptor, ICreateIndexRequest> createIndex = null)
         {
-            var node = new Uri(url);
-            var settings = new ConnectionSettings(node).DefaultIndex(defaultIndex);
+            settings = settings.DefaultIndex(defaultIndex);
             DefaultIndex = defaultIndex;
             Client = new ElasticClient(settings);
 
@@ -73,7 +72,7 @@ namespace FacebookCivicInsights.Data
 
             // Page numbers start at 0 for Elasticsearch.
             int from = (content.PageNumber - 1) * pageSize;
-            IEnumerable<T> all = Client.Search<T>(s =>
+            ISearchResponse<T> searchResponse = Client.Search<T>(s =>
             {
                 s = s.From(from).Size(pageSize);
 
@@ -97,9 +96,9 @@ namespace FacebookCivicInsights.Data
                 }
 
                 return s;
-            }).Documents;
+            });
 
-            content.Data = all;
+            content.Data = searchResponse.Documents;
             return content;
         }
 
