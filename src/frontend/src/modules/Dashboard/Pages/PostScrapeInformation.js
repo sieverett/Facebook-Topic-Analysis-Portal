@@ -16,7 +16,7 @@ class PostScrapeInformation extends Component {
     getPostScrape(scrapeId, (scrape, errorMessage) => this.setState({scrape, errorMessage}));
   }
 
-  handleRowSelected = (data, index) => window.location.href = "https://facebook.com/" + data.facebookId;
+  handleRowSelected = (data, index) => window.location.href = 'https://facebook.com/' + data.facebookId;
 
   render() {
     const { scrape, errorMessage } = this.state;

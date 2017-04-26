@@ -10,6 +10,6 @@ namespace FacebookCivicInsights.Models
         public DateTime ImportStart { get; set; }
         public DateTime ImportEnd { get; set; }
 
-        public IEnumerable<ScrapedPage> Pages { get; set; }
+        public IEnumerable<PageMetadata> Pages { get; set; }
     }
 }

@@ -14,6 +14,8 @@ class PageScrapeInformation extends Component {
     getPageScrape(scrapeId, (scrape, errorMessage) => this.setState({scrape, errorMessage}));
   }
 
+  handleRowSelected = (data, index) => window.location.href = '../' + data.id;
+
   render() {
     const { scrape, errorMessage } = this.state;
     const pagesMapping = [

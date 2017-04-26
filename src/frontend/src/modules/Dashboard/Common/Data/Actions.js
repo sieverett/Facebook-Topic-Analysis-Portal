@@ -166,5 +166,5 @@ export function getPageScrapes(pageNumber, pageSize, since, until) {
 }
 
 export function getPageScrape(scrapeId, handler) {
-  return sendRequest(`/api/dashboard/page/scrape/history/${scrapeId}`, 'GET', null, handler);
+  return sendRequest(`/api/dashboard/scrape/page/history/${scrapeId}`, 'GET', null, handler);
 }

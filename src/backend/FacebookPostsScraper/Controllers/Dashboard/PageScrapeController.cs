@@ -9,6 +9,7 @@ using FacebookPostsScraper.Data;
 using Microsoft.AspNetCore.Mvc;
 using FacebookPostsScraper.Data.Scraper;
 using FacebookPostsScraper.Data.Importer;
+using Elasticsearch.Net;
 
 namespace FacebookCivicInsights.Controllers.Dashboard
 {
@@ -16,11 +17,13 @@ namespace FacebookCivicInsights.Controllers.Dashboard
     public class PageScrapeController : Controller
     {
         private PageScraper PageScraper { get; }
+        private ElasticSearchRepository<PageMetadata> PageMetadataRepository { get; }
         private ElasticSearchRepository<PageScrapeHistory> PageScrapeHistoryRepository { get; }
 
-        public PageScrapeController(PageScraper pageScraper, ElasticSearchRepository<PageScrapeHistory> pageScrapeRepository)
+        public PageScrapeController(PageScraper pageScraper, ElasticSearchRepository<PageMetadata> pageMetadataRepository, ElasticSearchRepository<PageScrapeHistory> pageScrapeRepository)
         {
             PageScraper = pageScraper;
+            PageMetadataRepository = pageMetadataRepository;
             PageScrapeHistoryRepository = pageScrapeRepository;
         }
 
@@ -36,14 +39,43 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         [HttpPost("scrape")]
         public PageScrapeHistory ScrapePages([FromBody]IEnumerable<string> request)
         {
-            DateTime now = DateTime.Now;
-            ScrapedPage[] pages = PageScraper.Scrape(request, now).ToArray();
+            // If no pages were specified, scrape them all.
+            IEnumerable<PageMetadata> pagesToScrape;
+            if (request == null)
+            {
+                pagesToScrape = PageMetadataRepository.Paged().AllData();
+            }
+            else
+            {
+                pagesToScrape = request.Select(id => PageMetadataRepository.Get(id));
+            }
+
+            DateTime scrapeStart = DateTime.Now;
+            ScrapedPage[] pages = PageScraper.Scrape(pagesToScrape.Select(p => p.FacebookId), scrapeStart).ToArray();
+
+            // Now update the per-page list of all scraped pages.
+            foreach (PageMetadata pageMetadata in pagesToScrape)
+            {
+                ScrapedPage scrapedPage = pages.First(p => p.FacebookId == pageMetadata.FacebookId);
+                pageMetadata.FanCountHistory.Insert(0, new DatedFanCount
+                {
+                    Date = scrapedPage.Date,
+                    FanCount = scrapedPage.FanCount,
+                });
+                pageMetadata.LatestScrape = scrapeStart;
+                PageMetadataRepository.Save(pageMetadata, Refresh.False);
+
+                // Only save the fan count on this date.
+                pageMetadata.FanCountHistory = pageMetadata.FanCountHistory.Take(1).ToList();
+            }
+
+            // Now update the total-page list of the scrape.
             var pageScrapeHistory = new PageScrapeHistory
             {
                 Id = Guid.NewGuid().ToString(),
-                ImportStart = now,
+                ImportStart = scrapeStart,
                 ImportEnd = DateTime.Now,
-                Pages = pages
+                Pages = pagesToScrape
             };
 
             return PageScrapeHistoryRepository.Save(pageScrapeHistory);
