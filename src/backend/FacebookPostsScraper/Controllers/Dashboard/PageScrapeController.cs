@@ -59,12 +59,6 @@ namespace FacebookCivicInsights.Controllers.Dashboard
             return importer.ImportPages(fanCountFiles);
         }
 
-        [HttpGet("closest/{displayName}/{date}")]
-        public ScrapedPage Closest(string displayName, DateTime date)
-        {
-            return PageScraper.Closest(displayName, date);
-        }
-
         [HttpGet("history/{id}")]
         public PageScrapeHistory GetScrapeHistory(string id) => PageScrapeHistoryRepository.Get(id);
 

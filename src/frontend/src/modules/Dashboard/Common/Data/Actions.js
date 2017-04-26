@@ -69,32 +69,8 @@ export const sendRequest = (endpoint, method, params, result) => {
     });
 };
 
-export function getPost(postId, handler) {
-  return sendRequest(`/api/dashboard/post/${postId}`, 'GET', null, handler);
-}
-
-export function getPostScrape(scrapeId, handler) {
-  return sendRequest(`/api/dashboard/post/scrape/${scrapeId}`, 'GET', null, handler);
-}
-
-export function translatePost(postId, handler) {
-  return sendRequest(`/api/dashboard/post/translate/${postId}`, 'GET', null, handler);
-}
-
-export function getPage(pageId, handler) {
-  return sendRequest(`/api/dashboard/page/${pageId}`, 'GET', null, handler);
-}
-
-export function getPageScrape(scrapeId, handler) {
-  return sendRequest(`/api/dashboard/page/scrape/${scrapeId}`, 'GET', null, handler);
-}
-
-export function exportPosts(since, until, handler) {
-  return sendRequest('/api/dashboard/post/export', 'GET', {since, until}, null, handler);
-}
-
-export function exportPages(since, until, handler) {
-  return sendRequest('/api/dashboard/page/scrape/export', 'GET', {since, until}, null, handler);
+export function translate(message, handler) {
+  return sendRequest(`/api/dashboard/translate/${message}`, 'GET', null, handler);
 }
 
 export const ERROR_OCCURED = 'ERROR_OCCURED';
@@ -124,16 +100,35 @@ const callAPI = (endpoint, method, params, type) => {
   };
 };
 
-export function getPosts(pageNumber, pageSize, since, until) {
-  return callAPI('/api/dashboard/post/all', 'GET', {pageNumber, pageSize, since, until}, GET_POSTS_DONE);
+// Section: scraping posts.
+export function getPost(postId, handler) {
+  return sendRequest(`/api/dashboard/scrape/post/${postId}`, 'GET', null, handler);
 }
 
-export function getPostScrapes(pageNumber, pageSize, since, until) {
-  return callAPI('/api/dashboard/post/scrape/all', 'GET', {pageNumber, pageSize, since, until}, GET_SCRAPED_POSTS_DONE);
+export function getPosts(pageNumber, pageSize, since, until) {
+  return callAPI('/api/dashboard/scrape/post/all', 'GET', {pageNumber, pageSize, since, until}, GET_POSTS_DONE);
 }
 
 export function scrapePosts(since, until) {
-  return callAPI('/api/dashboard/post/scrape/scrape', 'POST', {since, until}, SCRAPE_POSTS_DONE);
+  return callAPI('/api/dashboard/scrape/post/scrape', 'POST', {since, until}, SCRAPE_POSTS_DONE);
+}
+
+export function exportPosts(since, until, handler) {
+  return sendRequest('/api/dashboard/scrape/post/export', 'GET', {since, until}, null, handler);
+}
+
+// Section: post scraping history.
+export function getPostScrapes(pageNumber, pageSize, since, until) {
+  return callAPI('/api/dashboard/scrape/post/history/all', 'GET', {pageNumber, pageSize, since, until}, GET_SCRAPED_POSTS_DONE);
+}
+
+export function getPostScrape(scrapeId, handler) {
+  return sendRequest(`/api/dashboard/scrape/post/history/${scrapeId}`, 'GET', null, handler);
+}
+
+// Section: pages to scrape.
+export function getPage(pageId, handler) {
+  return sendRequest(`/api/dashboard/page/${pageId}`, 'GET', null, handler);
 }
 
 export function newPage(name, facebookId) {
@@ -156,10 +151,20 @@ export function getPages(pageNumber, pageSize, since, until) {
   return callAPI('/api/dashboard/page/all', 'GET', {pageNumber, pageSize, since, until}, GET_PAGES_DONE);
 }
 
-export function getPageScrapes(pageNumber, pageSize, since, until) {
-  return callAPI('/api/dashboard/page/scrape/all', 'GET', {pageNumber, pageSize, since, until}, GET_SCRAPED_PAGES_DONE);
+// Section: scraping pages.
+export function scrapePages(pages) {
+  return callAPI('/api/dashboard/scrape/page/scrape', 'POST', pages, SCRAPE_PAGES_DONE);
 }
 
-export function scrapePages(pages) {
-  return callAPI('/api/dashboard/page/scrape/scrape', 'POST', pages, SCRAPE_PAGES_DONE);
+export function exportPages(since, until, handler) {
+  return sendRequest('/api/dashboard/scrape/page/export', 'GET', {since, until}, null, handler);
+}
+
+// Section: page scraping history.
+export function getPageScrapes(pageNumber, pageSize, since, until) {
+  return callAPI('/api/dashboard/scrape/page/history/all', 'GET', {pageNumber, pageSize, since, until}, GET_SCRAPED_PAGES_DONE);
+}
+
+export function getPageScrape(scrapeId, handler) {
+  return sendRequest(`/api/dashboard/page/scrape/history/${scrapeId}`, 'GET', null, handler);
 }

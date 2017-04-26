@@ -47,15 +47,6 @@ namespace FacebookCivicInsights.Controllers.Dashboard
             return File(serialized, "text/csv", "export.csv");
         }
 
-        [HttpGet("scrape/{id}")]
-        public PostScrapeHistory GetScrape(string id) => PostScrapeHistoryRepository.Get(id);
-
-        [HttpGet("scrape/all")]
-        public PagedResponse AllScrapes(int pageNumber, int pageSize, OrderingType? order, DateTime? since, DateTime? until)
-        {
-            return PostScrapeHistoryRepository.All(pageNumber, pageSize, p => p.ImportStart, order, p => p.ImportStart, since, until);
-        }
-
         public class PostScrapeRequest
         {
             public IEnumerable<string> Pages { get; set; }
@@ -63,7 +54,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
             public DateTime Until { get; set; }
         }
 
-        [HttpPost("scrape/scrape")]
+        [HttpPost("scrape")]
         public PostScrapeHistory ScrapePosts([FromBody]PostScrapeRequest request)
         {
             Debug.Assert(request != null);
@@ -105,14 +96,23 @@ namespace FacebookCivicInsights.Controllers.Dashboard
             return PostScrapeHistoryRepository.Save(postScrape);
         }
 
-        [HttpGet("import")]
-        public IEnumerable<ScrapedPost> ImportPages()
+        [HttpGet("import/historical")]
+        public IEnumerable<ScrapedPost> ImportHistoricalPosts()
         {
             var importer = new ScrapeImporter(PageScraper, PostScraper);
             IEnumerable<string> files = Directory.EnumerateFiles("C:\\Users\\hughb\\Documents\\TAF\\Data", "*.csv", SearchOption.AllDirectories);
             IEnumerable<string> fanCountFiles = files.Where(f => f.Contains("DedooseChartExcerpts"));
 
             return importer.ImportPosts(fanCountFiles);
+        }
+
+        [HttpGet("history/{id}")]
+        public PostScrapeHistory GetScrape(string id) => PostScrapeHistoryRepository.Get(id);
+
+        [HttpGet("history/all")]
+        public PagedResponse AllScrapes(int pageNumber, int pageSize, OrderingType? order, DateTime? since, DateTime? until)
+        {
+            return PostScrapeHistoryRepository.All(pageNumber, pageSize, p => p.ImportStart, order, p => p.ImportStart, since, until);
         }
     }
 }

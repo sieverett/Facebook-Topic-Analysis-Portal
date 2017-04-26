@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FacebookPostsScraper.Controllers.Dashboard
 {
-    [Route("/api/dashboard/transalte")]
+    [Route("/api/dashboard/translate")]
     public class TranslationController
     {
         [HttpGet("{message}")]

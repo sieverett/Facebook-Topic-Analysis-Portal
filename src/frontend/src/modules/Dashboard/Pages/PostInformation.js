@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { getPost, translatePost } from '../Common/Data/Actions';
+import { getPost, translate } from '../Common/Data/Actions';
 import ErrorPanel from '../Components/Common/ErrorPanel';
 import LoadingIndicator from '../Components/Common/LoadingIndicator';
 import Panel from '../Components/Common/Panel';
@@ -35,7 +35,7 @@ class PostInformation extends Component {
       this.setState({post, translatedPost, errorMessage});
 
       // Then translate it when we get the message.
-      translatePost(postId, (translation, errorMessage) => {
+      translate(post.message, (translation, errorMessage) => {
         const translatedMessage = errorMessage ? 'Can\'t Translate' : translation.result;
         this.setState({translatedPost: Object.assign({}, post, {
           message: translatedMessage
