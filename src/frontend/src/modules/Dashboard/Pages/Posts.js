@@ -12,17 +12,20 @@ class Browse extends Component {
   state = {}
 
   // Load the up-to-date list of posts each time the page is refreshed or loaded.
-  componentWillMount = () => this.getPosts(null, null);
+  componentWillMount = () => this.getPosts();
 
-  getPosts = (newPageNumber, newPageSize, newSince, newUntil) => {
-    const { pageNumber, pageSize, since, until } = this.context.store.getState().posts;
-    console.log(newSince);
-    this.context.store.dispatch(getPosts(newPageNumber || pageNumber, newPageSize || pageSize, newSince || since, newUntil || until));
+  getPosts = (newPageNumber, newPageSize, newSince, newUntil, newOrderingKey, newOrderingDescending) => {
+    const { pageNumber, pageSize, since, until, ordering } = this.context.store.getState().posts;
+    const orderingKey = newOrderingDescending === undefined && ordering ? ordering.key : newOrderingKey;
+    const descending = newOrderingDescending === undefined && ordering ? ordering.descending : newOrderingDescending;
+    this.context.store.dispatch(getPosts(newPageNumber || pageNumber, newPageSize || pageSize, newSince || since, newUntil || until, orderingKey, descending));
   }
   
   handleExportToCSV = (since, until) => exportPosts(since, until, (_, errorMessage) => {});
 
   handleRowSelection = (data, index) => window.location.href += '/' + data.id;
+
+  handleOrderingChanged = (orderingKey, descending) => this.getPosts(null, null, null, null, orderingKey, descending);
 
   export = () => {
     const { since, until } = this.context.store.getState().posts;
@@ -43,21 +46,22 @@ class Browse extends Component {
   
   table = (posts) => {
     const mapping = [
-      { name: 'Page Id',      key: path => path.page.name                            },
-      { name: 'Created Time', key: path => showDate(path.created_time)               },
-      { name: 'Type',         key: path => path.type                                 },
-      { name: 'Message',      key: path => path.message                              },
-      { name: 'Comments',     key: path => path.comments.summary.total_count         },
-      { name: 'Reactions',    key: path => path.reactions.summary.total_count        },
-      { name: 'Shares',       key: path => path.shares ? path.shares.count : 0       },
-      { name: 'Status Type',  key: path => path.status_type                          },
-      { name: 'Permalink',    key: path => <a href={path.permalink_url}>Facebook</a> }
+      {name: 'Page Id',      key: path => path.page.name                                                                        },
+      {name: 'Created Time', key: path => showDate(path.created_time),              orderingKey: 'created_time'                 },
+      {name: 'Type',         key: path => path.type                                                                             },
+      {name: 'Message',      key: path => path.message                                                                          },
+      {name: 'Comments',     key: path => path.comments.summary.total_count,        orderingKey: 'comments.summary.total_count' },
+      {name: 'Reactions',    key: path => path.reactions.summary.total_count,       orderingKey: 'reactions.summary.total_count'},
+      {name: 'Shares',       key: path => path.shares.count,                        orderingKey: 'shares.count'                 },
+      {name: 'Status Type',  key: path => path.status_type                                                                      },
+      {name: 'Permalink',    key: path => <a href={path.permalink_url}>Facebook</a>                                             }
     ];
 
     return (
       <Panel showHeading={false} table={true}>
         <DataTable mapping={mapping} data={posts.data} startIndex={posts.startItemIndex + 1} minSize={12}
-                   onRowSelected={this.handleRowSelection} />
+                   onRowSelected={this.handleRowSelection}
+                   orderingKey={posts.ordering.key} orderDescending={posts.ordering.descending} onOrderingChanged={this.handleOrderingChanged} />
       </Panel>
     );
   }

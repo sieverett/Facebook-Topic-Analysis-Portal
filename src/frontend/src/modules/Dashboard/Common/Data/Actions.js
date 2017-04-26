@@ -13,6 +13,10 @@ export const sendRequest = (endpoint, method, params, result) => {
       var query = '?';
       for (const key in params) {
         const value = params[key];
+        if (value === undefined) {
+          continue;
+        }
+
         let stringValue;
 
         const dateValue = moment(value, moment.ISO_8601);
@@ -110,8 +114,8 @@ export function getPost(postId, handler) {
   return sendRequest(`/api/dashboard/scrape/post/${postId}`, 'GET', null, handler);
 }
 
-export function getPosts(pageNumber, pageSize, since, until) {
-  return callAPI('/api/dashboard/scrape/post/all', 'GET', {pageNumber, pageSize, since, until}, GET_POSTS_DONE);
+export function getPosts(pageNumber, pageSize, since, until, orderingKey, descending) {
+  return callAPI('/api/dashboard/scrape/post/all', 'GET', {pageNumber, pageSize, since, until, orderingKey, descending}, GET_POSTS_DONE);
 }
 
 export function scrapePosts(since, until) {

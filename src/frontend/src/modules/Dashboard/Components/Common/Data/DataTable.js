@@ -29,7 +29,41 @@ class DataTable extends Component {
             <th>#</th>
           }
           {this.props.mapping.map(row => {
-            return <th key={row.name || row}>{row.name || row}</th>;
+            const value = row.name || row;
+
+            // The user can allow this column to be ordered by providing the field 'orderingKey'
+            // in the mapping.
+            if (row.orderingKey) {
+              const handleClicked = (e) => {
+                e.preventDefault();
+                
+                let descendingOrder;
+                if (row.orderingKey === this.props.orderingKey) {
+                  // If this row is currently selected, toggle it's ordering type.
+                  descendingOrder = !this.props.orderDescending;
+                } else {
+                  // Default to descending order.
+                  descendingOrder = true;
+                }
+
+                this.props.onOrderingChanged(row.orderingKey, descendingOrder);
+              };
+
+              // Emphasize the column if it is column we are currently using to order.
+              let extra;
+              if (row.orderingKey === this.props.orderingKey) {
+                // Show the correct display depending on if we are in ascending or descending order.
+                if (this.props.orderDescending) {
+                  extra = '▼';
+                } else {
+                  extra = '▲';
+                }
+              } 
+
+              return <th key={value}><a href="#" onClick={handleClicked}>{value}{extra}</a></th>
+            } else {
+              return <th key={value}>{value}</th>;
+            }
           })}
           {this.props.selectionChecker &&
             <th />
@@ -89,7 +123,7 @@ class DataTable extends Component {
     var rows = this.props.data.map((data, index) => {
       // The user can provide a handler that is triggered each time a row is clicked.
       var selectableClass = this.props.onRowSelected ? 'selectable-row' : '';
-      var handleOnClick = () => {
+      var handleRowClicked = () => {
         if (this.props.onRowSelected) {
           this.props.onRowSelected(data, index);
         }
@@ -108,7 +142,7 @@ class DataTable extends Component {
       // We need to add extra cells if we're showing the index on the left or the
       // selection indicator on the right.
       return (
-        <tr key={index} className={selectableClass} onClick={handleOnClick}>
+        <tr key={index} className={selectableClass} onClick={handleRowClicked}>
           {this.props.showIndex &&
             <td>{index + startIndex}</td>
           }

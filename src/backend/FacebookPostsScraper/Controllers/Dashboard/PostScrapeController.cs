@@ -36,18 +36,18 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         public ScrapedPost GetPost(string id) => PostScraper.Get(id);
 
         [HttpGet("all")]
-        public PagedResponse AllPosts(int pageNumber, int pageSize, OrderingType? order, DateTime? since, DateTime? until)
+        public PagedResponse AllPosts(int pageNumber, int pageSize, string orderingKey, bool? descending, DateTime? since, DateTime? until)
         {
             return PostScraper.All<TimeSearchResponse<ScrapedPost>, ScrapedPost>(
                 new PagedResponse(pageNumber, pageSize),
-                new Ordering<ScrapedPost>("created_time", order),
+                new Ordering<ScrapedPost>(orderingKey ?? "created_time", descending),
                 p => p.CreatedTime, since, until);
         }
 
         [HttpGet("export")]
-        public IActionResult ExportPost(OrderingType? order, DateTime? since, DateTime? until)
+        public IActionResult ExportPost(bool? descending, DateTime? since, DateTime? until)
         {
-            var ordering = new Ordering<ScrapedPost>("created_time", order);
+            var ordering = new Ordering<ScrapedPost>("created_time", descending);
             byte[] serialized = PostScraper.Export(ordering, p => p.CreatedTime, since, until, CsvSerialization.MapPost);
             return File(serialized, "text/csv", "export.csv");
         }
@@ -130,11 +130,11 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         public PostScrapeHistory GetScrape(string id) => PostScrapeHistoryRepository.Get(id);
 
         [HttpGet("history/all")]
-        public PagedResponse AllScrapes(int pageNumber, int pageSize, OrderingType? order, DateTime? since, DateTime? until)
+        public PagedResponse AllScrapes(int pageNumber, int pageSize, bool? descending, DateTime? since, DateTime? until)
         {
             return PostScrapeHistoryRepository.All<TimeSearchResponse<PostScrapeHistory>, PostScrapeHistory>(
                 new PagedResponse(pageNumber, pageSize),
-                new Ordering<PostScrapeHistory>("importStart", order),
+                new Ordering<PostScrapeHistory>("importStart", descending),
                 p => p.ImportStart, since, until);
         }
     }

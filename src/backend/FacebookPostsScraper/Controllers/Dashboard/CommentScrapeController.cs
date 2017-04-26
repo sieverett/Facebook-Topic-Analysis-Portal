@@ -25,12 +25,12 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         public ScrapedComment GetComment(string id) => CommentScraper.Get(id);
 
         [HttpGet("all")]
-        public PagedResponse AllComments(string pageId, int pageNumber, int pageSize, OrderingType? order)
+        public PagedResponse AllComments(string pageId, int pageNumber, int pageSize, bool? descending)
         {
             Func<QueryContainerDescriptor<ScrapedComment>, QueryContainer> search = q => q.Term(t => t.Field(c => c.Post.Id).Value(pageId));
             return CommentScraper.Paged<TimeSearchResponse<ScrapedComment>>(
                 new PagedResponse(pageNumber, pageSize),
-                new Ordering<ScrapedComment>("created_time", order),
+                new Ordering<ScrapedComment>("created_time", descending),
                 search);
         }
 

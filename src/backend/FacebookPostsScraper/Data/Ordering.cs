@@ -2,13 +2,13 @@
 {
     public class Ordering<T>
     {
-        public Ordering(string path, OrderingType? order)
+        public Ordering(string path, bool? descending)
         {
-            Path = path;
-            Order = order ?? OrderingType.Descending;
+            Key = path;
+            Descending = descending ?? true;
         }
 
-        public string Path { get; }
-        public OrderingType Order { get; }
+        public string Key { get; }
+        public bool Descending { get; }
     }
 }

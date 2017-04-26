@@ -75,13 +75,13 @@ namespace FacebookCivicInsights.Data
                 // The user can specify an ordering of the data returned.
                 if (ordering != null)
                 {
-                    if (ordering.Order == OrderingType.Ascending)
+                    if (ordering.Descending)
                     {
-                        s = s.Sort(sort => sort.Ascending(ordering.Path));
+                        s = s.Sort(sort => sort.Descending(ordering.Key));
                     }
                     else
                     {
-                        s = s.Sort(sort => sort.Descending(ordering.Path));
+                        s = s.Sort(sort => sort.Ascending(ordering.Key));
                     }
                 }
 
@@ -139,6 +139,7 @@ namespace FacebookCivicInsights.Data
         {
             Func<QueryContainerDescriptor<T>, QueryContainer> search = GetSearch(searchPath, since, until);
             TResponse response = repository.Paged<TResponse>(paging, ordering, search);
+            response.Ordering = ordering;
             response.Since = since;
             response.Until = until;
             return response;

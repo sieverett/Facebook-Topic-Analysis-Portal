@@ -98,6 +98,10 @@ body {
     margin-top: 0;
 }
 
+.data-table thead th a:focus {
+    text-decoration: none;
+}
+
 .data-table tbody tr,
 .blank-row {
     height: 45px;

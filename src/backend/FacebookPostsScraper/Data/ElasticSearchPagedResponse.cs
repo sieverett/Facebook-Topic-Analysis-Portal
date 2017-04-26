@@ -11,7 +11,7 @@ namespace FacebookCivicInsights.Data
 
         internal ElasticSearchRepository<T> Repository { get; set; }
         internal Func<QueryContainerDescriptor<T>, QueryContainer> Search { get; set; }
-        internal Ordering<T> Ordering { get; set; }
+        public Ordering<T> Ordering { get; set; }
 
         public override PagedResponse<T> PreviousPage()
         {

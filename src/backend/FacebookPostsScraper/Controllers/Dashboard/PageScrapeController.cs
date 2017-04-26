@@ -30,11 +30,11 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         public ScrapedPage GetScrape(string id) => PageScraper.Get(id);
 
         [HttpGet("all")]
-        public PagedResponse AllScrapes(int pageNumber, int pageSize, OrderingType? order, DateTime? since, DateTime? until)
+        public PagedResponse AllScrapes(int pageNumber, int pageSize, bool? descending, DateTime? since, DateTime? until)
         {
             return PageScraper.All<TimeSearchResponse<ScrapedPage>, ScrapedPage>(
                 new PagedResponse(pageNumber, pageSize),
-                new Ordering<ScrapedPage>("date", order),
+                new Ordering<ScrapedPage>("date", descending),
                 p => p.Date, since, until);
         }
 
@@ -97,19 +97,19 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         public PageScrapeHistory GetScrapeHistory(string id) => PageScrapeHistoryRepository.Get(id);
 
         [HttpGet("history/all")]
-        public PagedResponse AllScrapeHistory(int pageNumber, int pageSize, OrderingType? order, DateTime? since, DateTime? until)
+        public PagedResponse AllScrapeHistory(int pageNumber, int pageSize, bool? descending, DateTime? since, DateTime? until)
         {
             return PageScrapeHistoryRepository.All<TimeSearchResponse<PageScrapeHistory>, PageScrapeHistory>(
                 new PagedResponse(pageNumber, pageSize),
-                new Ordering<PageScrapeHistory>("importStart", order),
+                new Ordering<PageScrapeHistory>("importStart", descending),
                 p => p.ImportStart, since, until
             );
         }
 
         [HttpGet("history/export")]
-        public IActionResult ExportPages(OrderingType? order, DateTime? since, DateTime? until)
+        public IActionResult ExportPages(bool? descending, DateTime? since, DateTime? until)
         {
-            Ordering<PageScrapeHistory> ordering = new Ordering<PageScrapeHistory>("importStart", order);
+            Ordering<PageScrapeHistory> ordering = new Ordering<PageScrapeHistory>("importStart", descending);
             byte[] serialized = PageScrapeHistoryRepository.Export(ordering, p => p.ImportStart, since, until, CsvSerialization.MapPageScrape);
             return File(serialized, "text/csv", "export.csv");
         }
