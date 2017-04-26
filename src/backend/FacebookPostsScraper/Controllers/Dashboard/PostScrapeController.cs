@@ -40,7 +40,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         {
             return PostScraper.All<TimeSearchResponse<ScrapedPost>, ScrapedPost>(
                 new PagedResponse(pageNumber, pageSize),
-                new Ordering<ScrapedPost>("scraped_post", order),
+                new Ordering<ScrapedPost>("created_time", order),
                 p => p.CreatedTime, since, until);
         }
 

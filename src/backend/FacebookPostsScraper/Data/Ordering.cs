@@ -5,7 +5,7 @@
         public Ordering(string path, OrderingType? order)
         {
             Path = path;
-            Order = order ?? OrderingType.Ascending;
+            Order = order ?? OrderingType.Descending;
         }
 
         public string Path { get; }

@@ -42,18 +42,18 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         public PageScrapeHistory ScrapePages([FromBody]IEnumerable<string> request)
         {
             // If no pages were specified, scrape them all.
-            IEnumerable<PageMetadata> pagesToScrape;
+            PageMetadata[] pagesToScrape;
             if (request == null)
             {
-                pagesToScrape = PageMetadataRepository.Paged().AllData();
+                pagesToScrape = PageMetadataRepository.Paged().AllData().ToArray();
             }
             else
             {
-                pagesToScrape = request.Select(id => PageMetadataRepository.Get(id));
+                pagesToScrape = request.Select(id => PageMetadataRepository.Get(id)).ToArray();
             }
 
             DateTime scrapeStart = DateTime.Now;
-            ScrapedPage[] pages = PageScraper.Scrape(pagesToScrape.Select(p => p.FacebookId), scrapeStart).ToArray();
+            ScrapedPage[] pages = PageScraper.Scrape(pagesToScrape, scrapeStart).ToArray();
 
             // Now update the per-page list of all scraped pages.
             foreach (PageMetadata pageMetadata in pagesToScrape)

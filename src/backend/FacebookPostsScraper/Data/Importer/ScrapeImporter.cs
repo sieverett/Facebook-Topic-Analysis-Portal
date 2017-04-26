@@ -289,8 +289,7 @@ namespace FacebookCivicInsights.Data.Importer
 
                 // Get the nearest data we have for page likes at the time the post was created.
                 Debug.Assert(normalizedPageName != null);
-                post.Page = PageScraper.Closest(normalizedPageName, post.CreatedTime);
-                PostScraper.UpdateMetadata(post);
+                PostScraper.UpdateMetadata(post, normalizedPageName);
 
                 // Print the progress to make sure we know something is happening.
                 numberSaved++;

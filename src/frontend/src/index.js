@@ -62,6 +62,7 @@ class Root extends Component {
   state = {rehydrated: false}
 
   componentWillMount() {
+    // Persist the pages between reloads.
     persistStore(store, {whitelist: 'pages'}, () => this.setState({rehydrated: true}));
   }
 

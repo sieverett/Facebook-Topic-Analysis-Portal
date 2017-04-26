@@ -36,13 +36,14 @@ namespace FacebookCivicInsights.Data.Scraper
             Debug.Assert(until != DateTime.MinValue && since < DateTime.Now);
             Debug.Assert(since < until);
 
+            Console.WriteLine($"Started scraping {pages.Length} pages for their posts");
+
             DateTime start = DateTime.Now;
             int numberOfPosts = 0;
-
             for (int i = 0; i < pages.Length; i++)
             {
                 PageMetadata page = pages[i];
-                Console.WriteLine($"{i}/{pages.Length}: page.Name");
+                Console.WriteLine($"{i + 1}/{pages.Length}: {page.Name}");
 
                 // Query the Facebook Graph API to get all posts in the given range, published only by
                 // the page.
@@ -56,23 +57,22 @@ namespace FacebookCivicInsights.Data.Scraper
                 PagedResponse<ScrapedPost> postsResponse = GraphClient.GetPosts<ScrapedPost>(graphRequest);
                 foreach (ScrapedPost post in postsResponse.AllData())
                 {
-                    UpdateMetadata(post);
+                    UpdateMetadata(post, page.Name);
                     Save(post, Refresh.False);
 
                     numberOfPosts++;
                     yield return post;
                 }
 
-                // Don't store the entire fan count history for the page belonging to each post.
-                page.FanCountHistory = page.FanCountHistory.Take(1).ToList();
-
                 Console.WriteLine(numberOfPosts);
             }
+
+            Console.WriteLine($"Done scraping {pages.Length} pages for their posts");
         }
 
         public ScrapedPost ScrapePost(string postId) => GraphClient.GetPost<ScrapedPost>(new PostRequest(postId));
         
-        public void UpdateMetadata(ScrapedPost post)
+        public void UpdateMetadata(ScrapedPost post, string pageName)
         {
             // Update the database with the new post.
             Location location = post.Place?.Location;
@@ -85,14 +85,14 @@ namespace FacebookCivicInsights.Data.Scraper
                 post.GeoPoint = null;
             }
 
-            ScrapedPage scrapedPage = PageScraper.Closest(post.Page.Name, post.CreatedTime);
+            ScrapedPage scrapedPage = PageScraper.Closest(pageName, post.CreatedTime);
             post.Page = scrapedPage;
 
-            if (post.Scraped != DateTime.MinValue)
-            {
-                post.Scraped = DateTime.Now;
-            }
             post.LastScraped = DateTime.Now;
+            if (post.Scraped == DateTime.MinValue)
+            {
+                post.Scraped = post.LastScraped;
+            }
         }
     }
 }

@@ -23,18 +23,24 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         }
 
         [HttpPost("new/multiple")]
-        public IEnumerable<PageMetadata> AddMany([FromBody]IEnumerable<PageMetadata> pages)
+        public IEnumerable<PageMetadata> AddMany([FromBody]PageMetadata[] pages)
         {
             if (pages == null)
             {
                 throw new InvalidOperationException("No pages");
             }
 
-            foreach (PageMetadata page in pages)
+            Console.WriteLine("Started creating {pages.Length} pages");
+
+            for (int i = 0; i < pages.Length; i++)
             {
-                Console.WriteLine(page.Name);
+                PageMetadata page = pages[i];
+                Console.WriteLine($"{i + 1}/{pages.Length}: {page.Name}");
+
                 yield return Add(page);
             }
+
+            Console.WriteLine("Done creating {pages.Length} pages");
         }
 
         [HttpPost("new")]
@@ -44,6 +50,11 @@ namespace FacebookCivicInsights.Controllers.Dashboard
 
             // If the page doesn't already exist, save it.
             Page facebookPage = VerifyFacebookPage(page.FacebookId);
+            if (PageRepository.Paged(search: q => q.Term("facebookId", page.FacebookId)).Data.Any())
+            {
+                throw new InvalidOperationException($"Page {page.FacebookId} already exists.");
+            }
+
             page.Id = page.Name;
             page.FacebookId = facebookPage.Id;
             page.Category = facebookPage.Category;
@@ -102,10 +113,6 @@ namespace FacebookCivicInsights.Controllers.Dashboard
             if (page == null)
             {
                 throw new InvalidOperationException($"No such page {facebookId}.");
-            }
-            if (PageRepository.Paged(search: q => q.Term("facebookId", page.Id)).Data.Any())
-            {
-                throw new InvalidOperationException($"Page {facebookId} already exists.");
             }
 
             return page;

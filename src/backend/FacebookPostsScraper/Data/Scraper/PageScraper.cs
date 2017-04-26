@@ -19,15 +19,15 @@ namespace FacebookCivicInsights.Data.Scraper
             GraphClient = graphClient;
         }
 
-        public ScrapedPage Scrape(string pageId, bool save, DateTime start)
+        public ScrapedPage Scrape(PageMetadata page, bool save, DateTime start)
         {
             // Query the Facebook Graph API to get the page likes.
-            Page facebookPage = GraphClient.GetPage<Page>(new PageRequest(pageId));
+            Page facebookPage = GraphClient.GetPage<Page>(new PageRequest(page.FacebookId));
 
             var scrapedPage = new ScrapedPage
             {
                 FacebookId = facebookPage.Id,
-                Name = facebookPage.Name,
+                Name = page.Name,
                 Category = facebookPage.Category,
                 FanCount = facebookPage.FanCount
             };
@@ -36,12 +36,19 @@ namespace FacebookCivicInsights.Data.Scraper
             return save ? Save(scrapedPage, Refresh.False) : scrapedPage;
         }
 
-        public IEnumerable<ScrapedPage> Scrape(IEnumerable<string> pageIds, DateTime start)
+        public IEnumerable<ScrapedPage> Scrape(PageMetadata[] pages, DateTime start)
         {
-            foreach (string page in pageIds)
+            Console.WriteLine($"Started scraping {pages.Length} pages");
+
+            for (int i = 0; i < pages.Length;i++)
             {
+                PageMetadata page = pages[i];
+                Console.WriteLine($"{i + 1}/{pages.Length}: {page.Name}");
+
                 yield return Scrape(page, true, start);
             }
+
+            Console.WriteLine($"Done scraping {pages.Length} pages");
         }
 
         public ScrapedPage Closest(string name, DateTime date)
@@ -49,9 +56,9 @@ namespace FacebookCivicInsights.Data.Scraper
             // Get all the pages with the display name within +- 1 week of the specified date.
             IEnumerable<ScrapedPage> pages = Paged(search: q =>
             {
-                return q.Match(m => m.Field(p => p.Name).Query(name)) && q.DateRange(d =>
+                return q.Match(m => m.Field("name").Query(name)) && q.DateRange(d =>
                 {
-                    return d.Field(p => p.Date).LessThanOrEquals(date.AddDays(3)).GreaterThanOrEquals(date.AddDays(-3));
+                    return d.Field("date").LessThanOrEquals(date.AddDays(3)).GreaterThanOrEquals(date.AddDays(-3));
                 });
             }).Data.Where(p => p.Name == name);
 
