@@ -2,14 +2,16 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.IO;
+using CsvHelper;
 using Facebook;
 using FacebookCivicInsights.Data;
 using FacebookCivicInsights.Models;
 using FacebookPostsScraper.Data;
-using Microsoft.AspNetCore.Mvc;
 using FacebookPostsScraper.Data.Scraper;
 using FacebookPostsScraper.Data.Importer;
-using System.IO;
+using Microsoft.AspNetCore.Mvc;
+using Elasticsearch.Net;
 
 namespace FacebookCivicInsights.Controllers.Dashboard
 {
@@ -104,6 +106,21 @@ namespace FacebookCivicInsights.Controllers.Dashboard
             IEnumerable<string> fanCountFiles = files.Where(f => f.Contains("DedooseChartExcerpts"));
 
             return importer.ImportPosts(fanCountFiles);
+        }
+
+        [HttpGet("import/elasticsearch")]
+        public IEnumerable<ScrapedPost> ImportElasticSearchPosts(string path)
+        {
+            using (var fileStream = new FileStream(path, FileMode.Open))
+            using (var streamReader = new StreamReader(fileStream))
+            using (var csvReader = new CsvReader(streamReader))
+            {
+                csvReader.Configuration.RegisterClassMap<ScrapedPostMapping>();
+                foreach (ScrapedPost record in csvReader.GetRecords<ScrapedPost>())
+                {
+                    yield return PostScraper.Save(record, Refresh.False);
+                }
+            }
         }
 
         [HttpGet("history/{id}")]

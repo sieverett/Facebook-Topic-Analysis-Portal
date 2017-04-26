@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using Elasticsearch.Net;
 using Facebook;
+using Facebook.Models;
 using Facebook.Requests;
 using FacebookCivicInsights.Data;
 using FacebookCivicInsights.Models;
 using Nest;
-using Facebook.Models;
 
 namespace FacebookPostsScraper.Data.Scraper
 {
