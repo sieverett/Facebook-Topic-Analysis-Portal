@@ -1,13 +1,16 @@
-﻿using Facebook;
+﻿using System;
+using Facebook;
+using Nest;
 
 namespace FacebookCivicInsights.Data
 {
-    internal class PagedContent<T> : PagedResponse<T> where T: class, new()
+    public class ElasticSearchPagedResponse<T> : PagedResponse<T> where T: class, new()
     {
         public long TotalCount { get; set; }
         public long NumberOfPages => (TotalCount - 1) / PageSize + 1;
 
         internal ElasticSearchRepository<T> Repository { get; set; }
+        internal Func<QueryContainerDescriptor<T>, QueryContainer> Search { get; set; }
         internal Ordering<T> Ordering { get; set; }
 
         public override PagedResponse<T> PreviousPage()
@@ -23,7 +26,7 @@ namespace FacebookCivicInsights.Data
             {
                 PageNumber = PageNumber - 1,
                 PageSize = PageSize
-            }, Ordering);
+            }, Ordering, Search);
         }
 
         public override PagedResponse<T> NextPage()
@@ -39,7 +42,7 @@ namespace FacebookCivicInsights.Data
             {
                 PageNumber = PageNumber + 1,
                 PageSize = PageSize
-            }, Ordering);
+            }, Ordering, Search);
         }
     }
 }

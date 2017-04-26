@@ -9,7 +9,7 @@ using CsvHelper.Configuration;
 using FacebookCivicInsights.Models;
 using Facebook.Models;
 
-namespace FacebookPostsScraper.Data
+namespace FacebookCivicInsights.Data
 {
     public static class CsvSerialization
     {

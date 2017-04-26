@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using Facebook;
+using Facebook.Models;
+using Facebook.Requests;
 using FacebookCivicInsights.Data;
 using FacebookCivicInsights.Models;
 using Microsoft.AspNetCore.Mvc;
-using Facebook;
-using FacebookPostsScraper.Data.Scraper;
-using Facebook.Models;
-using Facebook.Requests;
-using System.Linq;
 
-namespace FacebookPostsScraper.Controllers.Dashboard
+namespace FacebookCivicInsights.Controllers.Dashboard
 {
     [Route("/api/dashboard/page")]
     public class PageController
@@ -87,7 +86,14 @@ namespace FacebookPostsScraper.Controllers.Dashboard
         [HttpGet("all")]
         public PagedResponse AllPages(int pageNumber, int pageSize, OrderingType? order, DateTime? since, DateTime? until)
         {
-            return PageRepository.All(pageNumber, pageSize, p => p.Created, order, p => p.Created, since, until);
+            return PageRepository.All<TimeSearchResponse<PageMetadata>, PageMetadata>(
+                pageNumber,
+                pageSize,
+                p => p.Created,
+                order,
+                p => p.Created,
+                since,
+                until);
         }
 
         [HttpDelete("{id}")]

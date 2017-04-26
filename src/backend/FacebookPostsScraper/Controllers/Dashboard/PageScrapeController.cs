@@ -5,10 +5,9 @@ using System.Linq;
 using Facebook;
 using FacebookCivicInsights.Data;
 using FacebookCivicInsights.Models;
-using FacebookPostsScraper.Data;
 using Microsoft.AspNetCore.Mvc;
-using FacebookPostsScraper.Data.Scraper;
-using FacebookPostsScraper.Data.Importer;
+using FacebookCivicInsights.Data.Scraper;
+using FacebookCivicInsights.Data.Importer;
 using Elasticsearch.Net;
 
 namespace FacebookCivicInsights.Controllers.Dashboard
@@ -33,7 +32,14 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         [HttpGet("all")]
         public PagedResponse AllScrapes(int pageNumber, int pageSize, OrderingType? order, DateTime? since, DateTime? until)
         {
-            return PageScraper.All(pageNumber, pageSize, p => p.Date, order, p => p.Date, since, until);
+            return PageScraper.All<TimeSearchResponse<ScrapedPage>, ScrapedPage>(
+                pageNumber,
+                pageSize,
+                p => p.Date,
+                order,
+                p => p.Date,
+                since,
+                until);
         }
 
         [HttpPost("scrape")]
@@ -97,7 +103,14 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         [HttpGet("history/all")]
         public PagedResponse AllScrapeHistory(int pageNumber, int pageSize, OrderingType? order, DateTime? since, DateTime? until)
         {
-            return PageScrapeHistoryRepository.All(pageNumber, pageSize, p => p.ImportStart, order, p => p.ImportStart, since, until);
+            return PageScrapeHistoryRepository.All<TimeSearchResponse<PageScrapeHistory>, PageScrapeHistory>(
+                pageNumber,
+                pageSize,
+                p => p.ImportStart,
+                order,
+                p => p.ImportStart,
+                since, until
+            );
         }
 
         [HttpGet("history/export")]

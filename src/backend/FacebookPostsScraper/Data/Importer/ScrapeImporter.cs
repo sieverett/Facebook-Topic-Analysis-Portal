@@ -7,11 +7,10 @@ using System.Linq;
 using CsvHelper;
 using Elasticsearch.Net;
 using FacebookCivicInsights.Models;
-using FacebookPostsScraper.Data.Scraper;
+using FacebookCivicInsights.Data.Scraper;
 using Facebook.Models;
-using FacebookCivicInsights.Data;
 
-namespace FacebookPostsScraper.Data.Importer
+namespace FacebookCivicInsights.Data.Importer
 {
     public class ScrapeImporter
     {

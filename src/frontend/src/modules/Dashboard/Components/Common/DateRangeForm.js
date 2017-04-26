@@ -4,7 +4,10 @@ import DateDropdown from './DateDropdown';
 import Modal from './Modal';
 
 class DateRangeForm extends Component {
-  state = {since: '', until: ''}
+  constructor(props) {
+    super(props);
+    this.state = {since: props.since || '', until: props.until || ''};
+  }
 
   handleSinceChange = (event) => this.setState({since: moment(event.target.value).toDate(), began: true});
   handleUntilChange = (event) => this.setState({until: moment(event.target.value).toDate(), began: true});
@@ -38,7 +41,7 @@ class DateRangeForm extends Component {
     }
 
     if (errorMessage.length === 0) {
-      action(since, until);
+      action(since || "Invalid", until || "Invalid");
       return true;
     }
 

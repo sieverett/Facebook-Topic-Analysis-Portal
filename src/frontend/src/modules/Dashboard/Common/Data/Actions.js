@@ -1,4 +1,5 @@
 import 'whatwg-fetch';
+import moment from 'moment';
 import { WebApi } from '../../../../config';
 
 export const sendRequest = (endpoint, method, params, result) => {
@@ -13,8 +14,12 @@ export const sendRequest = (endpoint, method, params, result) => {
       for (const key in params) {
         const value = params[key];
         let stringValue;
+
+        const dateValue = moment(value, moment.ISO_8601);
         if (value instanceof Date) {
           stringValue = value.toISOString();
+        } else if (dateValue.isValid()) {
+          stringValue = dateValue.toISOString();
         } else {
           stringValue = value;
         }

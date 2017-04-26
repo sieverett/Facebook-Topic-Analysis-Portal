@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using Facebook;
 using FacebookCivicInsights.Data;
 using FacebookCivicInsights.Models;
-using FacebookPostsScraper.Data.Scraper;
+using FacebookCivicInsights.Data.Scraper;
 using Microsoft.AspNetCore.Mvc;
 using Nest;
 
-namespace FacebookPostsScraper.Controllers.Dashboard
+namespace FacebookCivicInsights.Controllers.Dashboard
 {
     [Route("/api/dashboard/scrape/comment")]
     public class CommentScrapeController
@@ -28,7 +28,12 @@ namespace FacebookPostsScraper.Controllers.Dashboard
         public PagedResponse AllComments(string pageId, int pageNumber, int pageSize, OrderingType? order)
         {
             Func<QueryContainerDescriptor<ScrapedComment>, QueryContainer> search = q => q.Term(t => t.Field(c => c.Post.Id).Value(pageId));
-            return CommentScraper.All(pageNumber, pageSize, p => p.CreatedTime, order, search);
+            return CommentScraper.All<TimeSearchResponse<ScrapedComment>, ScrapedComment>(
+                pageNumber,
+                pageSize,
+                p => p.CreatedTime,
+                order,
+                search);
         }
 
         public class CommentScrapeRequest

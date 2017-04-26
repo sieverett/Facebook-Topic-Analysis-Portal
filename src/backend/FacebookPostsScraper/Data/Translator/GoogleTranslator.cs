@@ -4,7 +4,7 @@ using System.Net.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace FacebookPostsScraper.Data.Translator
+namespace FacebookCivicInsights.Data.Translator
 {
     public class GoogleTranslator
     {

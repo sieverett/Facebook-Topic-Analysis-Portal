@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using FacebookPostsScraper.Data.Scraper;
+using FacebookCivicInsights.Data.Scraper;
 using Nest;
 
 namespace FacebookCivicInsights

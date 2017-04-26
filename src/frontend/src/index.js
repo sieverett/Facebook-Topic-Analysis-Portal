@@ -62,7 +62,7 @@ class Root extends Component {
   state = {rehydrated: false}
 
   componentWillMount() {
-    persistStore(store, {}, () => this.setState({rehydrated: true}));
+    persistStore(store, {whitelist: 'pages'}, () => this.setState({rehydrated: true}));
   }
 
   render() {

@@ -12,15 +12,12 @@ class Browse extends Component {
   state = {}
 
   // Load the up-to-date list of posts each time the page is refreshed or loaded.
-  componentWillMount = () => this.getPosts();
+  componentWillMount = () => this.getPosts(null, null);
 
   getPosts = (newPageNumber, newPageSize, newSince, newUntil) => {
-    const { pageNumber, pageSize } = this.context.store.getState().posts;
-    const { since, until } = this.state;
-    this.context.store.dispatch(getPosts(newPageNumber || pageNumber, newPageSize || pageSize, newSince || since, newUntil || until)).then(() => {
-      // Perist the since and until values when changing page or size.
-      this.setState({since: newSince || since, until: newUntil || until});
-    });
+    const { pageNumber, pageSize, since, until } = this.context.store.getState().posts;
+    console.log(newSince);
+    this.context.store.dispatch(getPosts(newPageNumber || pageNumber, newPageSize || pageSize, newSince || since, newUntil || until));
   }
   
   handleExportToCSV = (since, until) => exportPosts(since, until, (_, errorMessage) => {});
@@ -28,11 +25,12 @@ class Browse extends Component {
   handleRowSelection = (data, index) => window.location.href += '/' + data.id;
 
   export = () => {
+    const { since, until } = this.context.store.getState().posts;
     return (
       <Panel showHeading={false} className="sub-header">
         <DateRangeForm action="Browse" onSubmit={(since, until) => this.getPosts(null, null, since, until)}
                        extraButtonAction="Export to CSV" onExtraButtonClicked={this.handleExportToCSV}
-                       lowerName="From" upperName="To" allowEmpty={true} />
+                       since={since} lowerName="From" until={until} upperName="To" allowEmpty={true} />
       </Panel>
     );
   }

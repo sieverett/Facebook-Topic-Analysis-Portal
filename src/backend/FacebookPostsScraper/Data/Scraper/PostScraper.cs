@@ -6,11 +6,10 @@ using Elasticsearch.Net;
 using Facebook;
 using Facebook.Models;
 using Facebook.Requests;
-using FacebookCivicInsights.Data;
 using FacebookCivicInsights.Models;
 using Nest;
 
-namespace FacebookPostsScraper.Data.Scraper
+namespace FacebookCivicInsights.Data.Scraper
 {
     public class PostScraper : ElasticSearchRepository<ScrapedPost>
     {

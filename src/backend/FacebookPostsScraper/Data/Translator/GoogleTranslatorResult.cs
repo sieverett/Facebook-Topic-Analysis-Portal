@@ -1,4 +1,4 @@
-﻿namespace FacebookPostsScraper.Data.Translator
+﻿namespace FacebookCivicInsights.Data.Translator
 {
     public class GoogleTranslatorResult
     {

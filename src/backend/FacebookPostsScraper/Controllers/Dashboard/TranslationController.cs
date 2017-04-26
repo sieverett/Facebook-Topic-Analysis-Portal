@@ -1,7 +1,7 @@
-﻿using FacebookPostsScraper.Data.Translator;
+﻿using FacebookCivicInsights.Data.Translator;
 using Microsoft.AspNetCore.Mvc;
 
-namespace FacebookPostsScraper.Controllers.Dashboard
+namespace FacebookCivicInsights.Controllers.Dashboard
 {
     [Route("/api/dashboard/translate")]
     public class TranslationController
