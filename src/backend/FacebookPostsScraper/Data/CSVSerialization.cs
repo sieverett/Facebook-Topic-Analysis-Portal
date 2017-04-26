@@ -84,7 +84,7 @@ namespace FacebookPostsScraper.Data
             dynamic expanded = new ExpandoObject();
 
             // TODO
-            /*
+
             IDictionary<string, object> expandedDictionary = (IDictionary<string, object>)expanded;
 
             expanded.Date = scrape.ImportStart;
@@ -92,7 +92,7 @@ namespace FacebookPostsScraper.Data
             foreach (PageMetadata page in scrape.Pages)
             {
                 expandedDictionary.Add(page.Name, page.FanCount);
-            }*/
+            }
 
             return expanded;
         }

@@ -157,7 +157,7 @@ export function scrapePages(pages) {
 }
 
 export function exportPages(since, until, handler) {
-  return sendRequest('/api/dashboard/scrape/page/export', 'GET', {since, until}, null, handler);
+  return sendRequest('/api/dashboard/scrape/page/history/export', 'GET', {since, until}, null, handler);
 }
 
 // Section: page scraping history.
