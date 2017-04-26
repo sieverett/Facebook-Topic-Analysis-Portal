@@ -80,6 +80,7 @@ namespace FacebookPostsScraper.Data.Importer
 
         public IEnumerable<ScrapedPage> ImportPages(IEnumerable<string> fanCountCSVs)
         {
+            DateTime now = DateTime.Now;
             int numberSaved = 0;
             foreach (string fanCountCSV in fanCountCSVs)
             {
@@ -110,7 +111,7 @@ namespace FacebookPostsScraper.Data.Importer
                             {
                                 // Add the page to the list if the page doesn't already exist.
                                 Console.WriteLine($"Creating {mappedPage.DisplayName}");
-                                ScrapedPage facebookPage = PageScraper.Scrape(mappedPage.FacebookId, save: false);
+                                ScrapedPage facebookPage = PageScraper.Scrape(mappedPage.FacebookId, false, now);
                                 mappedPage.FacebookId = facebookPage.FacebookId;
                                 mappedPage.Name = facebookPage.Name;
                                 mappedPage.Category = facebookPage.Category;

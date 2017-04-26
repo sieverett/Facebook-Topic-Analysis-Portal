@@ -20,7 +20,7 @@ namespace FacebookPostsScraper.Data.Scraper
             GraphClient = graphClient;
         }
 
-        public ScrapedPage Scrape(string pageId, bool save)
+        public ScrapedPage Scrape(string pageId, bool save, DateTime start)
         {
             // Query the Facebook Graph API to get the page likes.
             Page facebookPage = GraphClient.GetPage<Page>(new PageRequest(pageId));
@@ -32,16 +32,16 @@ namespace FacebookPostsScraper.Data.Scraper
                 Category = facebookPage.Category,
                 FanCount = facebookPage.FanCount
             };
-            scrapedPage.Date = DateTime.Now;
+            scrapedPage.Date = start;
 
             return save ? Save(scrapedPage, Refresh.False) : scrapedPage;
         }
 
-        public IEnumerable<ScrapedPage> Scrape(IEnumerable<string> pageIds)
+        public IEnumerable<ScrapedPage> Scrape(IEnumerable<string> pageIds, DateTime start)
         {
             foreach (string page in pageIds)
             {
-                yield return Scrape(page, save: true);
+                yield return Scrape(page, true, start);
             }
         }
 

@@ -37,7 +37,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         public PageScrapeHistory ScrapePages([FromBody]IEnumerable<string> request)
         {
             DateTime now = DateTime.Now;
-            ScrapedPage[] pages = PageScraper.Scrape(request).ToArray();
+            ScrapedPage[] pages = PageScraper.Scrape(request, now).ToArray();
             var pageScrapeHistory = new PageScrapeHistory
             {
                 Id = Guid.NewGuid().ToString(),
