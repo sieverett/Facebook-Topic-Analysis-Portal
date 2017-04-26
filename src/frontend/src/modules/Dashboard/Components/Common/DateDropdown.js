@@ -43,6 +43,10 @@ class DateDropdown extends Component {
       date = this.daysAgo(21);
     } else if (type === 'one-month-ago') {
       date = this.monthsAgo(1);
+    } else if (type === 'two-months-ago') {
+      date = this.monthsAgo(2);
+    } else if (type === 'three-months-ago') {
+      date = this.monthsAgo(3);
     } else if (type === 'last-import-date') {
       date = this.props.lastImportDate;
     }
@@ -67,7 +71,10 @@ class DateDropdown extends Component {
           {this.option('1 week ago', 'one-week-ago')}
           {this.option('2 weeks ago', 'two-weeks-ago')}
           {this.option('3 weeks ago', 'three-weeks-ago')}
+          <li role="separator" className="divider" />
           {this.option('1 month ago', 'one-month-ago')}
+          {this.option('2 months ago', 'two-months-ago')}
+          {this.option('3 months ago', 'three-months-ago')}
           {this.props.lastImportDate &&
             <span>
               <li role="separator" className="divider" />
