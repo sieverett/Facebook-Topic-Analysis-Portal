@@ -45,16 +45,16 @@ namespace FacebookPostsScraper.Data.Scraper
             }
         }
 
-        public ScrapedPage Closest(string displayName, DateTime date)
+        public ScrapedPage Closest(string name, DateTime date)
         {
             // Get all the pages with the display name within +- 1 week of the specified date.
             IEnumerable<ScrapedPage> pages = Paged(search: q =>
             {
-                return q.Match(m => m.Field("displayName").Query(displayName)) && q.DateRange(d =>
+                return q.Match(m => m.Field(p => p.Name).Query(name)) && q.DateRange(d =>
                 {
-                    return d.Field("date").LessThanOrEquals(date.AddDays(3)).GreaterThanOrEquals(date.AddDays(-3));
+                    return d.Field(p => p.Date).LessThanOrEquals(date.AddDays(3)).GreaterThanOrEquals(date.AddDays(-3));
                 });
-            }).Data.Where(p => p.DisplayName == displayName);
+            }).Data.Where(p => p.Name == name);
 
             // Get the closest date to the specified date.
             IEnumerable<ScrapedPage> closestPages = pages.OrderBy(p => (p.Date - date).Duration());

@@ -55,7 +55,6 @@ namespace FacebookPostsScraper.Data
             flattened.InternalPageId = post.Page.Id;
             flattened.PageId = post.Page.FacebookId;
             flattened.PageName = post.Page.Name;
-            flattened.PageDisplayName = post.Page.DisplayName;
             flattened.PageCategory = post.Page.Category;
             flattened.PageLikes = post.Page.FanCount;
             flattened.PageLikesDate = post.Page.Date;
@@ -144,7 +143,6 @@ namespace FacebookPostsScraper.Data
                 {
                     Id = row.GetField("InternalPageId"),
                     FacebookId = row.GetField("PageId"),
-                    DisplayName = row.GetField("PageDisplayName"),
                     Name = row.GetField("PageName"),
                     Category = row.GetField("PageCategory"),
                     FanCount = row.GetField<int>("PageLikes"),

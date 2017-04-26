@@ -101,7 +101,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         [HttpGet("import/historical")]
         public IEnumerable<ScrapedPost> ImportHistoricalPosts()
         {
-            var importer = new ScrapeImporter(PageScraper, PostScraper);
+            var importer = new ScrapeImporter(PageScraper, PageMetadataRepository, PostScraper);
             IEnumerable<string> files = Directory.EnumerateFiles("C:\\Users\\hughb\\Documents\\TAF\\Data", "*.csv", SearchOption.AllDirectories);
             IEnumerable<string> fanCountFiles = files.Where(f => f.Contains("DedooseChartExcerpts"));
 

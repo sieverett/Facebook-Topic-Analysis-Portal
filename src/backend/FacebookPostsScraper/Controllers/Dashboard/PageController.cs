@@ -45,8 +45,9 @@ namespace FacebookPostsScraper.Controllers.Dashboard
 
             // If the page doesn't already exist, save it.
             Page facebookPage = VerifyFacebookPage(page.FacebookId);
-            page.Id = Guid.NewGuid().ToString();
+            page.Id = page.Name;
             page.FacebookId = facebookPage.Id;
+            page.Category = facebookPage.Category;
             page.FirstScrape = now;
             page.LatestScrape = now;
 

@@ -86,7 +86,7 @@ namespace FacebookPostsScraper.Data.Scraper
                 post.GeoPoint = null;
             }
 
-            ScrapedPage scrapedPage = PageScraper.Closest(post.Page.DisplayName, post.CreatedTime);
+            ScrapedPage scrapedPage = PageScraper.Closest(post.Page.Name, post.CreatedTime);
             post.Page = scrapedPage;
 
             if (post.Scraped != DateTime.MinValue)
