@@ -33,8 +33,6 @@ namespace FacebookCivicInsights.Data
 
         public T Get(string id) => Client.Get<T>(id).Source;
 
-        public long TotalCount() => Client.Count<T>().Count;
-
         public const int DefaultPageNumber = 1;
         private const int DefaultPageSize = 50;
         public const int MaxPageSize = 10000;
@@ -60,15 +58,8 @@ namespace FacebookCivicInsights.Data
                 Repository = this,
                 Ordering = ordering,
                 PageNumber = pageNumber,
-                PageSize = pageSize,
-                TotalCount = TotalCount()
+                PageSize = pageSize
             };
-
-            // If the page number is not in range, use the default page number.
-            if (content.StartItemIndex >= content.TotalCount)
-            {
-                content.PageNumber = DefaultPageNumber;
-            }
 
             // Page numbers start at 0 for Elasticsearch.
             int from = (content.PageNumber - 1) * pageSize;
@@ -99,6 +90,14 @@ namespace FacebookCivicInsights.Data
             });
 
             content.Data = searchResponse.Documents;
+            content.TotalCount = searchResponse.Total;
+
+            // If the page number is not in range, use the default search.
+            if (content.StartItemIndex > content.TotalCount)
+            {
+                return Paged(null, ordering, search);
+            }
+
             return content;
         }
 

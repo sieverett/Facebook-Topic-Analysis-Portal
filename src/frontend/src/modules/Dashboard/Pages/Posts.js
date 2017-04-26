@@ -9,12 +9,18 @@ import Panel from '../Components/Common/Panel';
 import DateRangeForm from '../Components/Common/DateRangeForm';
 
 class Browse extends Component {
+  state = {}
+
   // Load the up-to-date list of posts each time the page is refreshed or loaded.
   componentWillMount = () => this.getPosts();
 
-  getPosts = (newPageNumber, newPageSize, since, until) => {
+  getPosts = (newPageNumber, newPageSize, newSince, newUntil) => {
     const { pageNumber, pageSize } = this.context.store.getState().posts;
-    this.context.store.dispatch(getPosts(newPageNumber || pageNumber, newPageSize || pageSize, since, until));
+    const { since, until } = this.state;
+    this.context.store.dispatch(getPosts(newPageNumber || pageNumber, newPageSize || pageSize, newSince || since, newUntil || until)).then(() => {
+      // Perist the since and until values when changing page or size.
+      this.setState({since: newSince || since, until: newUntil || until});
+    });
   }
   
   handleExportToCSV = (since, until) => exportPosts(since, until, (_, errorMessage) => {});
@@ -33,8 +39,8 @@ class Browse extends Component {
 
   heading = (pagination) => {
     return <PagedDataTableBar {...pagination}
-              onPageSizeChanged={size => this.getPosts(null, size)}
-              onPageNumberChanged={number => this.getPosts(number, null)} />;
+              onPageSizeChanged={pageSize => this.getPosts(null, pageSize)}
+              onPageNumberChanged={pageNumber => this.getPosts(pageNumber, null)} />;
   }
   
   table = (posts) => {
