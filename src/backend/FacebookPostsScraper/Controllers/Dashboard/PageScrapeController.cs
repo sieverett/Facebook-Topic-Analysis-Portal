@@ -33,13 +33,9 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         public PagedResponse AllScrapes(int pageNumber, int pageSize, OrderingType? order, DateTime? since, DateTime? until)
         {
             return PageScraper.All<TimeSearchResponse<ScrapedPage>, ScrapedPage>(
-                pageNumber,
-                pageSize,
-                p => p.Date,
-                order,
-                p => p.Date,
-                since,
-                until);
+                new PagedResponse(pageNumber, pageSize),
+                new Ordering<ScrapedPage>("date", order),
+                p => p.Date, since, until);
         }
 
         [HttpPost("scrape")]
@@ -104,19 +100,17 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         public PagedResponse AllScrapeHistory(int pageNumber, int pageSize, OrderingType? order, DateTime? since, DateTime? until)
         {
             return PageScrapeHistoryRepository.All<TimeSearchResponse<PageScrapeHistory>, PageScrapeHistory>(
-                pageNumber,
-                pageSize,
-                p => p.ImportStart,
-                order,
-                p => p.ImportStart,
-                since, until
+                new PagedResponse(pageNumber, pageSize),
+                new Ordering<PageScrapeHistory>("importStart", order),
+                p => p.ImportStart, since, until
             );
         }
 
         [HttpGet("history/export")]
         public IActionResult ExportPages(OrderingType? order, DateTime? since, DateTime? until)
         {
-            byte[] serialized = PageScrapeHistoryRepository.Export(p => p.ImportStart, order, p => p.ImportStart, since, until, CsvSerialization.MapPageScrape);
+            Ordering<PageScrapeHistory> ordering = new Ordering<PageScrapeHistory>("importStart", order);
+            byte[] serialized = PageScrapeHistoryRepository.Export(ordering, p => p.ImportStart, since, until, CsvSerialization.MapPageScrape);
             return File(serialized, "text/csv", "export.csv");
         }
     }

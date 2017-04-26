@@ -1,11 +1,14 @@
-﻿using System;
-using System.Linq.Expressions;
-
-namespace FacebookCivicInsights.Data
+﻿namespace FacebookCivicInsights.Data
 {
     public class Ordering<T>
     {
-        public OrderingType Order { get; set; }
-        public Expression<Func<T, object>> Path { get; set; }
+        public Ordering(string path, OrderingType? order)
+        {
+            Path = path;
+            Order = order ?? OrderingType.Ascending;
+        }
+
+        public string Path { get; }
+        public OrderingType Order { get; }
     }
 }

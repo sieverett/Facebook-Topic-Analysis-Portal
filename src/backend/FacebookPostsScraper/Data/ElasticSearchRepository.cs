@@ -121,15 +121,6 @@ namespace FacebookCivicInsights.Data
 
     public static class ElasticSearchRepositoryExtensions
     {
-        private static Ordering<T> GetOrdering<T>(Expression<Func<T, object>> orderPath, OrderingType? order)
-        {
-            return new Ordering<T>
-            {
-                Order = order ?? OrderingType.Descending,
-                Path = orderPath
-            };
-        }
-
         private static Func<QueryContainerDescriptor<T>, QueryContainer> GetSearch<T>(Expression<Func<T, object>> searchPath, DateTime? since, DateTime? until) where T : class, new()
         {
             return query =>
@@ -143,44 +134,25 @@ namespace FacebookCivicInsights.Data
         }
 
         public static TResponse All<TResponse, T>(this ElasticSearchRepository<T> repository,
-            int pageNumber, int pageSize,
-            Expression<Func<T, object>> orderPath, OrderingType? order,
+            PagedResponse paging, Ordering<T> ordering,
             Expression<Func<T, object>> searchPath, DateTime? since, DateTime? until) where T : class, new() where TResponse : TimeSearchResponse<T>, new()
         {
             Func<QueryContainerDescriptor<T>, QueryContainer> search = GetSearch(searchPath, since, until);
-            TResponse response = repository.All<TResponse, T>(pageNumber, pageSize, orderPath, order, search);
+            TResponse response = repository.Paged<TResponse>(paging, ordering, search);
             response.Since = since;
             response.Until = until;
             return response;
         }
 
-        public static TResponse All<TResponse, T>(this ElasticSearchRepository<T> repository,
-            int pageNumber, int pageSize,
-            Expression<Func<T, object>> orderPath, OrderingType? order,
-            Func<QueryContainerDescriptor<T>, QueryContainer> search) where T : class, new() where TResponse : ElasticSearchPagedResponse<T>, new()
-        {
-            var paging = new PagedResponse { PageNumber = pageNumber, PageSize = pageSize };
-            Ordering<T> ordering = GetOrdering(orderPath, order);
-
-            return repository.Paged<TResponse>(paging, ordering, search);
-        }
-
         public static byte[] Export<T>(this ElasticSearchRepository<T> repository,
-            Expression<Func<T, object>> orderPath, OrderingType? order,
+            Ordering<T> ordering,
             Expression<Func<T, object>> searchPath, DateTime? since, DateTime? until,
             Func<T, dynamic> mapping) where T : class, new()
         {
-            var paging = new PagedResponse
-            {
-                PageNumber = ElasticSearchRepository<T>.DefaultPageNumber,
-                PageSize = ElasticSearchRepository<T>.MaxPageSize
-            };
-            Ordering<T> ordering = GetOrdering(orderPath, order);
+            var paging = new PagedResponse(ElasticSearchRepository<T>.DefaultPageNumber, ElasticSearchRepository<T>.MaxPageSize);
             Func<QueryContainerDescriptor<T>, QueryContainer> search = GetSearch(searchPath, since, until);
 
-            PagedResponse<T> response = repository.Paged<ElasticSearchPagedResponse<T>>(paging, ordering, search);
-            IEnumerable<T> data = response.AllData();
-
+            IEnumerable<T> data = repository.Paged<ElasticSearchPagedResponse<T>>(paging, ordering, search).AllData();
             return CsvSerialization.Serialize(data, mapping);
         }
     }

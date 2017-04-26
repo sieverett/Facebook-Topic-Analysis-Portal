@@ -87,13 +87,9 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         public PagedResponse AllPages(int pageNumber, int pageSize, OrderingType? order, DateTime? since, DateTime? until)
         {
             return PageRepository.All<TimeSearchResponse<PageMetadata>, PageMetadata>(
-                pageNumber,
-                pageSize,
-                p => p.Created,
-                order,
-                p => p.Created,
-                since,
-                until);
+                new PagedResponse(pageNumber, pageSize),
+                new Ordering<PageMetadata>("created", order),
+                p => p.Created, since, until);
         }
 
         [HttpDelete("{id}")]
