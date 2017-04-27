@@ -78,13 +78,17 @@ namespace FacebookCivicInsights.Controllers.Dashboard
 
             int numberOfComments = 0;
             ScrapedPost[] posts = PostScraper.Scrape(pages, request.Since, request.Until).ToArray();
+
+            Console.WriteLine($"Started scraping comments for {posts.Length} posts");
+
             foreach (ScrapedPost post in posts)
             {
                 ScrapedComment[] comments = CommentScraper.Scrape(post).ToArray();
                 numberOfComments += comments.Length;
                 Console.WriteLine(numberOfComments);
             }
-            Console.WriteLine("Done Scraping");
+
+            Console.WriteLine($"Done scraping {pages.Length} pages. Scraped {posts.Length} posts with {numberOfComments} comments");
 
             var postScrape = new PostScrapeHistory
             {

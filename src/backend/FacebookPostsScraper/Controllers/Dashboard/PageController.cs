@@ -30,7 +30,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
                 throw new InvalidOperationException("No pages");
             }
 
-            Console.WriteLine("Started creating {pages.Length} pages");
+            Console.WriteLine($"Started creating {pages.Length} pages");
 
             for (int i = 0; i < pages.Length; i++)
             {
@@ -40,7 +40,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
                 yield return Add(page);
             }
 
-            Console.WriteLine("Done creating {pages.Length} pages");
+            Console.WriteLine($"Done creating {pages.Length} pages");
         }
 
         [HttpPost("new")]
