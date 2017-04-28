@@ -32,9 +32,6 @@ namespace FacebookCivicInsights.Data.Scraper
         public IEnumerable<ScrapedPost> Scrape(PageMetadata[] pages, DateTime since, DateTime until)
         {
             Debug.Assert(pages != null);
-            Debug.Assert(since != DateTime.MinValue && since < DateTime.Now);
-            Debug.Assert(until != DateTime.MinValue && since < DateTime.Now);
-            Debug.Assert(since < until);
 
             Console.WriteLine($"Started scraping {pages.Length} pages for their posts");
 
