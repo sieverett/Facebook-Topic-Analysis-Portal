@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using FacebookCivicInsights.Data.Scraper;
 using Nest;
+using Elasticsearch.Net;
 
 namespace FacebookCivicInsights
 {
@@ -58,7 +59,16 @@ namespace FacebookCivicInsights
             string elasticSearchPassword = Configuration["elasticsearch:password"];
 
             var node = new Uri(elasticSearchUrl);
-            Func<ConnectionSettings> settings = () => new ConnectionSettings(node).BasicAuthentication(elasticSearchUserName, elasticSearchPassword);
+            Func<ConnectionSettings> settings = () =>
+            {
+                var connectionSettings = new ConnectionSettings(node);
+                if (string.IsNullOrEmpty(elasticSearchUserName))
+                {
+                    return connectionSettings;
+                }
+
+                return connectionSettings.BasicAuthentication(elasticSearchUserName, elasticSearchPassword);
+            };
 
             var pageMetadataRepository = new ElasticSearchRepository<PageMetadata>(settings(), elasticSearchDefaultIndex + "-metadata-page");
             services.AddSingleton(pageMetadataRepository);

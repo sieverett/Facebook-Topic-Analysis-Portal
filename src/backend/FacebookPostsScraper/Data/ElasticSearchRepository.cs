@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using Elasticsearch.Net;
 using Facebook;
 using Nest;
+using System.Linq;
 
 namespace FacebookCivicInsights.Data
 {
@@ -26,7 +27,7 @@ namespace FacebookCivicInsights.Data
 
         public T Save(T data, Refresh refresh = Refresh.WaitFor)
         {
-            Client.Index(data, idx => idx.Index(DefaultIndex).Refresh(refresh));
+            IIndexResponse response = Client.Index(data, idx => idx.Index(DefaultIndex).Refresh(refresh));
             return data;
         }
 
@@ -94,7 +95,7 @@ namespace FacebookCivicInsights.Data
                 return s;
             });
 
-            content.Data = searchResponse.Documents;
+            content.Data = searchResponse.Documents.ToArray();
             content.TotalCount = searchResponse.Total;
 
             // If the page number is not in range, use the default search.
