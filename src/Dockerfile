@@ -2,5 +2,5 @@ FROM node
 WORKDIR /frontend
 EXPOSE 80
 COPY . .
-RUN npm install -g serve
+RUN yarn global add serve
 ENTRYPOINT serve -p 80 -s ./frontend/build
