@@ -8,12 +8,10 @@ services:
       - "50547:50547"
 
   frontend:
-    build: src
+    build: src/frontend
     container_name: frontend
     ports:
       - "80:80"
-    links:
-      - backend
   
   elasticsearch:
     build: elasticsearch/
