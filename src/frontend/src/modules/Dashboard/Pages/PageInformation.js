@@ -40,7 +40,7 @@ class PageInformation extends Component {
           </Panel>
         </div>
         <div className="col-md-6">
-          <TextWell header={<a href={'https://facebook.com/' + page.facebookId}>https://facebook.com/{page.facebookId}</a>} />
+          <TextWell header={<a href={`https://facebook.com/${page.facebookId}`}>https://facebook.com/{page.facebookId}</a>} />
           <DateWell title="First Scrape" date={page.firstScrape} fallbackTitle="Never Imported" />
           <DateWell title="Latest Scrape" date={page.latestScrape} fallbackTitle="Never Imported" />
           <div className="well">

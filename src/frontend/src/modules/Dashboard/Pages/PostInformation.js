@@ -51,6 +51,8 @@ class PostInformation extends Component {
       </Panel>
     )
   }
+  
+  viewComments = () => window.location.href += '/comments';
 
   render() {
     const { post, translatedPost, errorMessage } = this.state;
@@ -69,7 +71,7 @@ class PostInformation extends Component {
           </div>
           <div className="row">
             <TextWell className="col-md-4" header={post.reactions.summary.total_count} subheader="Reactions" />
-            <TextWell className="col-md-4" header={post.comments.summary.total_count} subheader="Comments" />
+            <TextWell className="col-md-4" header={post.comments.summary.total_count} subheader="Comments" onClick={this.viewComments} />
             <TextWell className="col-md-4" header={post.shares.count} subheader="Shares" />
           </div>
           <hr />

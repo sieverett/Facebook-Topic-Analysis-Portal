@@ -83,6 +83,6 @@ class Browse extends Component {
     );
   }
 }
-Browse.contextTypes = { store: React.PropTypes.object };
+Browse.contextTypes = {store: React.PropTypes.object};
 
 export default Browse;
