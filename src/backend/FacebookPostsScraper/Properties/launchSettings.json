@@ -21,6 +21,13 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "applicationUrl": "http://localhost:50547"
+    },
+    "Remote FacebookPostsScraper": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Production"
+      },
+      "applicationUrl": "http://localhost:50547"
     }
   }
 }
