@@ -36,8 +36,6 @@ namespace FacebookCivicInsights.Data
         private const int DefaultPageSize = 50;
         public const int MaxPageSize = 10000;
 
-        public static PagedResponse MaxPaging => new PagedResponse(DefaultPageNumber, MaxPageSize);
-
         public ElasticSearchPagedResponse<T> Paged(PagedResponse paging = null, Ordering<T> ordering = null, Func<QueryContainerDescriptor<T>, QueryContainer> search = null)
         {
             return Paged<ElasticSearchPagedResponse<T>>(paging, ordering, search);
@@ -54,9 +52,9 @@ namespace FacebookCivicInsights.Data
 
             // If the page size was invalid, use the default page size.
             int pageSize = DefaultPageSize;
-            if (paging != null && (paging.PageSize > 0 && paging.PageSize <= MaxPageSize))
+            if (paging != null && paging.PageSize > 0)
             {
-                pageSize = paging.PageSize;
+                pageSize = Math.Min(paging.PageSize, MaxPageSize);
             }
 
             var content = new TPaging

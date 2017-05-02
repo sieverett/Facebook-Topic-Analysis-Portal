@@ -85,7 +85,7 @@ namespace FacebookCivicInsights.Data
 
             flattened.Id = comment.Id;
             flattened.PostId = comment.Post.Id;
-            flattened.ParentCommentId = comment.ParentComment.Id;
+            flattened.ParentCommentId = comment.ParentComment?.Id;
 
             flattened.PosterId = comment.Poster.Id;
             flattened.PosterName = comment.Poster.Name;
