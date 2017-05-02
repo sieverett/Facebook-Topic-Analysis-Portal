@@ -21,18 +21,21 @@ class Browse extends Component {
     this.context.store.dispatch(getPosts(newPageNumber || pageNumber, newPageSize || pageSize, newSince || since, newUntil || until, orderingKey, descending));
   }
   
-  handleExportToCSV = (since, until) => exportPosts(since, until, (_, errorMessage) => {});
+  handleExport = (contentType, since, until) => exportPosts(contentType, since, until, (_, errorMessage) => {});
 
   handleRowSelection = (data, index) => window.location.href += '/' + data.id;
 
   handleOrderingChanged = (orderingKey, descending) => this.getPosts(null, null, null, null, orderingKey, descending);
 
   export = () => {
+    const extraButtonActions = [
+      {title: 'Export as CSV',  onClick: () => this.handleExport('csv')  },
+    ];
+
     const { since, until } = this.context.store.getState().posts;
     return (
       <Panel showHeading={false} className="sub-header">
-        <DateRangeForm action="Browse" onSubmit={(since, until) => this.getPosts(null, null, since, until)}
-                       extraButtonAction="Export to CSV" onExtraButtonClicked={this.handleExportToCSV}
+        <DateRangeForm action="Browse" onSubmit={(since, until) => this.getPosts(null, null, since, until)} extraButtonActions={extraButtonActions}
                        since={since} lowerName="From" until={until} upperName="To" allowEmpty={true} />
       </Panel>
     );

@@ -80,6 +80,28 @@ class DateRangeForm extends Component {
     return moment(date).format('YYYY-MM-DDTHH:mm');
   }
 
+  extraButtons = () => {
+    // The user can provide a list of buttons and their 
+    if (!this.props.extraButtonActions) {
+      return undefined;
+    }
+
+    const first = this.props.extraButtonActions[0];
+    const remainingActions = this.props.extraButtonActions.slice(1);
+
+    return (
+      <div className="btn-group">
+        <button type="button" className="btn btn-default btn-lg" onClick={e => this.handleSubmit(e, first.onClick)}>{first.title}</button>
+        <button type="button" className="btn btn-default btn-lg dropdown-toggle" data-toggle="dropdown"><span className="caret" /></button>
+        <ul className="dropdown-menu">
+          {remainingActions.map(action => {
+            return <li key={action.title}><a href="#" onClick={e => this.handleSubmit(e, action.onClick)}>{action.title}</a></li>
+          })}
+        </ul>
+      </div>
+    );
+  }
+
   render() {
     return (
       <form className="btn-toolbar" onSubmit={e => this.handleSubmit(e, this.props.onSubmit)}>
@@ -99,12 +121,7 @@ class DateRangeForm extends Component {
               <input value={this.formatDate(this.state.until)} onChange={this.handleUntilChange} className="form-control" type="datetime-local" name="until" />
             </div>
           </div>
-          {this.props.extraButtonAction &&
-            <div className="btn-group">
-              <input type="button" className="btn btn-default btn-lg" value={this.props.extraButtonAction}
-                     onClick={e => this.handleSubmit(e, this.props.onExtraButtonClicked)} />
-            </div>          
-          }
+          {this.extraButtons()}
         </div>
         <Modal id="date-form-modal" title="Cannot scrape">{this.state.errorMessage}</Modal>
       </form>
