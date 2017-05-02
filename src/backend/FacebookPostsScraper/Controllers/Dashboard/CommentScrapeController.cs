@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using Facebook;
 using FacebookCivicInsights.Data;
 using FacebookCivicInsights.Models;
 using FacebookCivicInsights.Data.Scraper;
 using Microsoft.AspNetCore.Mvc;
 using Nest;
+using Newtonsoft.Json;
 
 namespace FacebookCivicInsights.Controllers.Dashboard
 {
@@ -41,6 +43,24 @@ namespace FacebookCivicInsights.Controllers.Dashboard
                 new PagedResponse(pageNumber, pageSize),
                 new Ordering<ScrapedComment>(orderingKey ?? "created_time", descending),
                 p => p.CreatedTime, since, until);
+        }
+
+        [HttpGet("export/csv")]
+        public IActionResult ExportAsCSV(bool? descending, DateTime? since, DateTime? until)
+        {
+            IEnumerable<ScrapedComment> history = AllComments(0, int.MaxValue, null, descending, since, until).AllData();
+
+            byte[] serialized = CsvSerialization.Serialize(history, CsvSerialization.MapComment);
+            return File(serialized, "text/csv", "export.csv");
+        }
+
+        [HttpGet("export/json")]
+        public IActionResult ExportAsJson(bool? descending, DateTime? since, DateTime? until)
+        {
+            IEnumerable<ScrapedComment> history = AllComments(0, int.MaxValue, null, descending, since, until).AllData();
+
+            byte[] serialized = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(history));
+            return File(serialized, "application/json-download", "export.json");
         }
 
         public class CommentScrapeRequest

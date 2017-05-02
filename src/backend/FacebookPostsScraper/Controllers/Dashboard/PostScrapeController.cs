@@ -47,7 +47,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         }
 
         [HttpGet("export/csv")]
-        public IActionResult ExportPagesAsCSV(bool? descending, DateTime? since, DateTime? until)
+        public IActionResult ExportAsCSV(bool? descending, DateTime? since, DateTime? until)
         {
             IEnumerable<ScrapedPost> history = AllPosts(0, int.MaxValue, null, descending, since, until).AllData();
 
@@ -56,7 +56,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         }
 
         [HttpGet("export/json")]
-        public IActionResult ExportPagesAsJson(bool? descending, DateTime? since, DateTime? until)
+        public IActionResult ExportAsJson(bool? descending, DateTime? since, DateTime? until)
         {
             IEnumerable<ScrapedPost> history = AllPosts(0, int.MaxValue, null, descending, since, until).AllData();
 

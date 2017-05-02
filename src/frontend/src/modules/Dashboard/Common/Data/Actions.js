@@ -151,6 +151,10 @@ export function getComments(pageNumber, pageSize, since, until, orderingKey, des
   return callAPI('/api/dashboard/scrape/comment/all', 'GET', {pageNumber, pageSize, since, until, orderingKey, descending}, GET_COMMENTS_DONE);
 }
 
+export function exportComments(contentType, since, until, handler) {
+  return sendRequest(`/api/dashboard/scrape/comment/export/${contentType}`, 'GET', {since, until}, null, handler);
+}
+
 // Section: pages to scrape.
 export function getPage(pageId, handler) {
   return sendRequest(`/api/dashboard/page/${pageId}`, 'GET', null, handler);

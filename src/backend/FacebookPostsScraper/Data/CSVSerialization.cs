@@ -78,6 +78,31 @@ namespace FacebookCivicInsights.Data
             return flattened;
         }
 
+        public static dynamic MapComment(ScrapedComment comment)
+        {
+            // Flatten out the comment and export it.
+            dynamic flattened = new ExpandoObject();
+
+            flattened.Id = comment.Id;
+            flattened.PostId = comment.Post.Id;
+            flattened.ParentCommentId = comment.ParentComment.Id;
+
+            flattened.PosterId = comment.Poster.Id;
+            flattened.PosterName = comment.Poster.Name;
+
+            flattened.Message = comment.Message;
+            flattened.NumberOfLikes = comment.NumberOfLikes;
+            flattened.NumberOfReplies = comment.NumberOfReplies;
+
+            flattened.CreatedTime = comment.CreatedTime;
+            flattened.UpdatedTime = comment.UpdatedTime;
+
+            flattened.FirstScraped = comment.Created;
+            flattened.LastScraped = comment.LastScraped;
+
+            return flattened;
+        }
+
         public static dynamic MapPageScrape(PageScrapeHistory scrape)
         {
             dynamic expanded = new ExpandoObject();
