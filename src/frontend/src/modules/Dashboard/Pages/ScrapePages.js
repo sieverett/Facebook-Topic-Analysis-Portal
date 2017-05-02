@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { getPageScrapes, exportPages, getPages, scrapePages } from '../Common/Data/Actions';
+import Panel from '../Common/Panel';
 import ExportPages from '../Components/ScrapePages/ExportPages';
 import PageScrapeList from '../Components/ScrapePages/PageScrapeList';
 import ScrapePageForm from '../Components/ScrapePages/ScrapePageForm';
@@ -30,7 +31,9 @@ class ScrapePages extends Component {
         <ScrapePageForm pages={pages} errorMessage={errorMessage} onSubmit={this.handleScrapePages} />
         <section className="col-md-8">
           <ExportPages onSubmit={(since, until) => this.getScrapes(null, null, since, until)} onExport={this.handleExportToCSV} />
-          <PageScrapeList scrapes={pageScrapes} errorMessage={errorMessage} onRowSelected={this.handlePageScrapeClicked} />
+          <Panel showHeading={false} table={true}>
+            <PageScrapeList scrapes={pageScrapes} errorMessage={errorMessage} onRowSelected={this.handlePageScrapeClicked} />
+          </Panel>
         </section>
       </section>
     );
