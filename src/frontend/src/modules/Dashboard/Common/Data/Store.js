@@ -58,6 +58,14 @@ const postScrapes = (state={}, action) => {
   return state;
 };
 
+const comments = (state={}, action) => {
+  if (action.type === actions.GET_COMMENTS_DONE) {
+    return handleGetAPI(state, action);
+  }
+
+  return state;
+}
+
 const pages = (state={}, action) => {
   if (action.type === actions.GET_PAGES_DONE) {
     return handleGetAPI(state, action);
@@ -92,7 +100,7 @@ const error = (state = null, action) => {
   return state;
 }
 
-const reducer = combineReducers({posts, postScrapes, pages, pageScrapes, error});
+const reducer = combineReducers({posts, postScrapes, comments, pages, pageScrapes, error});
 
 export const configureStore = () => {
   const store = compose(autoRehydrate(), applyMiddleware(thunk))(createStore)(reducer);

@@ -85,6 +85,7 @@ export function translate(message, handler) {
 export const ERROR_OCCURED = 'ERROR_OCCURED';
 
 export const GET_POSTS_DONE = 'GET_POSTS_DONE';
+export const GET_COMMENTS_DONE = 'GET_COMMENTS_DONE';
 export const SCRAPE_POSTS_DONE = 'SCRAPE_POSTS_DONE';
 export const GET_SCRAPED_POSTS_DONE = 'GET_SCRAPED_POSTS_DONE';
 
@@ -116,6 +117,10 @@ export function getPost(postId, handler) {
 
 export function getPosts(pageNumber, pageSize, since, until, orderingKey, descending) {
   return callAPI('/api/dashboard/scrape/post/all', 'GET', {pageNumber, pageSize, since, until, orderingKey, descending}, GET_POSTS_DONE);
+}
+
+export function getPostComments(postId, pageNumber, pageSize) {
+  return callAPI('/api/dashboard/scrape/comment/all', 'GET', {postId, pageNumber, pageSize}, GET_COMMENTS_DONE);
 }
 
 export function scrapePosts(since, until) {
