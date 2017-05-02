@@ -28,12 +28,12 @@ class Posts extends Component {
   handleOrderingChanged = (orderingKey, descending) => this.getPosts(null, null, null, null, orderingKey, descending);
 
   export = () => {
+    const { since, until } = this.context.store.getState().posts;
     const extraButtonActions = [
-      {title: 'Export as CSV',  onClick: () => this.handleExport('csv')  },
-      {title: 'Export as JSON', onClick: () => this.handleExport('json') }
+      {title: 'Export as CSV',  onClick: () => this.handleExport('csv', since, until)  },
+      {title: 'Export as JSON', onClick: () => this.handleExport('json', since, until) }
     ];
 
-    const { since, until } = this.context.store.getState().posts;
     return (
       <Panel showHeading={false} className="sub-header">
         <DateRangeForm action="Browse" onSubmit={(since, until) => this.getPosts(null, null, since, until)} extraButtonActions={extraButtonActions}

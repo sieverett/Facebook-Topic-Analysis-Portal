@@ -30,7 +30,7 @@ class ScrapePages extends Component {
       <section>
         <ScrapePageForm pages={pages} errorMessage={errorMessage} onSubmit={this.handleScrapePages} />
         <section className="col-md-8">
-          <ExportPages onSubmit={(since, until) => this.getScrapes(null, null, since, until)} onExport={this.handleExport} />
+          <ExportPages onSubmit={(since, until) => this.getScrapes(null, null, since, until)} onExport={contentType => this.handleExport(contentType, pages.since, pages.until)} />
           <Panel showHeading={false} table={true}>
             <PageScrapeList scrapes={pageScrapes} errorMessage={errorMessage} onRowSelected={this.handlePageScrapeClicked} />
           </Panel>
