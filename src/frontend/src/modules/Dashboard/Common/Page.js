@@ -4,16 +4,18 @@ import SideBar from '../Components/Common/SideBar';
 
 const pages = [
   [
-    { name: 'Overview',     href: '/dashboard/home'         }
+    {name: 'Overview',     href: '/dashboard/home'        }
   ],
   [
-    { name: 'Scrape Posts', href: '/dashboard/posts/scrape' },
-    { name: 'Posts',        href: '/dashboard/posts'        }
+    {name: 'Scrape Posts', href: '/dashboard/posts/scrape'},
+    {name: 'Posts',        href: '/dashboard/posts'       }
   ],
   [
-    { name: 'Scrape Pages', href: '/dashboard/pages/scrape' },
-    { name: 'Pages',        href: '/dashboard/pages'
-    }
+    {name: 'Comments',     href: '/dashboard/comments'    }
+  ],
+  [
+    {name: 'Scrape Pages', href: '/dashboard/pages/scrape'},
+    {name: 'Pages',        href: '/dashboard/pages'       }
   ]
 ];
 

@@ -126,7 +126,7 @@ export function getPosts(pageNumber, pageSize, since, until, orderingKey, descen
 }
 
 export function getPostComments(postId, pageNumber, pageSize) {
-  return callAPI('/api/dashboard/scrape/comment/all', 'GET', {postId, pageNumber, pageSize}, GET_COMMENTS_DONE);
+  return callAPI(`/api/dashboard/scrape/comment/post/${postId}`, 'GET', {postId, pageNumber, pageSize}, GET_COMMENTS_DONE);
 }
 
 export function scrapePosts(since, until) {
@@ -144,6 +144,11 @@ export function getPostScrapes(pageNumber, pageSize, since, until) {
 
 export function getPostScrape(scrapeId, handler) {
   return sendRequest(`/api/dashboard/scrape/post/history/${scrapeId}`, 'GET', null, handler);
+}
+
+// Section: scraping comments.
+export function getComments(pageNumber, pageSize, since, until, orderingKey, descending) {
+  return callAPI('/api/dashboard/scrape/comment/all', 'GET', {pageNumber, pageSize, since, until, orderingKey, descending}, GET_COMMENTS_DONE);
 }
 
 // Section: pages to scrape.

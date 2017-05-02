@@ -12,6 +12,8 @@ import Posts from './modules/Dashboard/Pages/Posts';
 import PostInformation from './modules/Dashboard/Pages/PostInformation';
 import PostCommentsInformation from './modules/Dashboard/Pages/PostCommentsInformation';
 
+import Comments from './modules/Dashboard/Pages/Comments'
+
 import ScrapePosts from './modules/Dashboard/Pages/ScrapePosts';
 import PostScrapeInformation from './modules/Dashboard/Pages/PostScrapeInformation';
 
@@ -48,6 +50,8 @@ const routes =
     <Route path="/dashboard/posts/scrape/:scrapeId" component={PostScrapeInformation}/>
     <Route path="/dashboard/posts/:postId" component={PostInformation}/>
     <Route path="/dashboard/posts/:postId/comments" component={PostCommentsInformation}/>
+    
+    <Route path="/dashboard/comments" component={Comments}/>
 
     <Route path="/dashboard/pages" component={Pages}/>
     <Route path="/dashboard/pages/scrape" component={ScrapePages}/>
