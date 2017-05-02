@@ -269,3 +269,13 @@ body {
     display: flex;
     flex-grow:1;
 }
+
+.selectable-well:hover {
+    cursor: pointer;
+    background-color: #e6e6e6;
+}
+
+.selectable-well a:hover,
+.selectable-well a:focus {
+    text-decoration: none;
+}
