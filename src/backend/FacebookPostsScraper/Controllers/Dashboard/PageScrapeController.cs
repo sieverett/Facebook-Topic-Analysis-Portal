@@ -2,13 +2,15 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
+using Elasticsearch.Net;
 using Facebook;
 using FacebookCivicInsights.Data;
 using FacebookCivicInsights.Models;
 using Microsoft.AspNetCore.Mvc;
 using FacebookCivicInsights.Data.Scraper;
 using FacebookCivicInsights.Data.Importer;
-using Elasticsearch.Net;
+using Newtonsoft.Json;
 
 namespace FacebookCivicInsights.Controllers.Dashboard
 {
@@ -97,7 +99,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         public PageScrapeHistory GetScrapeHistory(string id) => PageScrapeHistoryRepository.Get(id);
 
         [HttpGet("history/all")]
-        public PagedResponse AllScrapeHistory(int pageNumber, int pageSize, bool? descending, DateTime? since, DateTime? until)
+        public PagedResponse<PageScrapeHistory> AllScrapeHistory(int pageNumber, int pageSize, bool? descending, DateTime? since, DateTime? until)
         {
             return PageScrapeHistoryRepository.All<TimeSearchResponse<PageScrapeHistory>, PageScrapeHistory>(
                 new PagedResponse(pageNumber, pageSize),
@@ -106,12 +108,22 @@ namespace FacebookCivicInsights.Controllers.Dashboard
             );
         }
 
-        [HttpGet("history/export")]
-        public IActionResult ExportPages(bool? descending, DateTime? since, DateTime? until)
+        [HttpGet("history/export/csv")]
+        public IActionResult ExportPagesAsCSV(bool? descending, DateTime? since, DateTime? until)
         {
-            Ordering<PageScrapeHistory> ordering = new Ordering<PageScrapeHistory>("importStart", descending);
-            byte[] serialized = PageScrapeHistoryRepository.Export(ordering, p => p.ImportStart, since, until, CsvSerialization.MapPageScrape);
+            IEnumerable<PageScrapeHistory> history = AllScrapeHistory(0, int.MaxValue, descending, since, until).AllData();
+
+            byte[] serialized = CsvSerialization.Serialize(history, CsvSerialization.MapPageScrape);
             return File(serialized, "text/csv", "export.csv");
+        }
+
+        [HttpGet("history/export/json")]
+        public IActionResult ExportPagesAsJson(bool? descending, DateTime? since, DateTime? until)
+        {
+            IEnumerable<PageScrapeHistory> history = AllScrapeHistory(0, int.MaxValue, descending, since, until).AllData();
+
+            byte[] serialized = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(history));
+            return File(serialized, "application/json-download", "export.json");
         }
     }
 }

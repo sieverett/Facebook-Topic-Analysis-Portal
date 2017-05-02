@@ -30,6 +30,7 @@ class Browse extends Component {
   export = () => {
     const extraButtonActions = [
       {title: 'Export as CSV',  onClick: () => this.handleExport('csv')  },
+      {title: 'Export as JSON', onClick: () => this.handleExport('json') }
     ];
 
     const { since, until } = this.context.store.getState().posts;

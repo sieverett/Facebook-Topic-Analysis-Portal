@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.IO;
+using System.Text;
 using CsvHelper;
+using Elasticsearch.Net;
 using Facebook;
 using FacebookCivicInsights.Data;
 using FacebookCivicInsights.Models;
 using FacebookCivicInsights.Data.Scraper;
 using FacebookCivicInsights.Data.Importer;
 using Microsoft.AspNetCore.Mvc;
-using Elasticsearch.Net;
+using Newtonsoft.Json;
 
 namespace FacebookCivicInsights.Controllers.Dashboard
 {
@@ -36,7 +38,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         public ScrapedPost GetPost(string id) => PostScraper.Get(id);
 
         [HttpGet("all")]
-        public PagedResponse AllPosts(int pageNumber, int pageSize, string orderingKey, bool? descending, DateTime? since, DateTime? until)
+        public PagedResponse<ScrapedPost> AllPosts(int pageNumber, int pageSize, string orderingKey, bool? descending, DateTime? since, DateTime? until)
         {
             return PostScraper.All<TimeSearchResponse<ScrapedPost>, ScrapedPost>(
                 new PagedResponse(pageNumber, pageSize),
@@ -44,12 +46,22 @@ namespace FacebookCivicInsights.Controllers.Dashboard
                 p => p.CreatedTime, since, until);
         }
 
-        [HttpGet("export")]
-        public IActionResult ExportPost(bool? descending, DateTime? since, DateTime? until)
+        [HttpGet("export/csv")]
+        public IActionResult ExportPagesAsCSV(bool? descending, DateTime? since, DateTime? until)
         {
-            var ordering = new Ordering<ScrapedPost>("created_time", descending);
-            byte[] serialized = PostScraper.Export(ordering, p => p.CreatedTime, since, until, CsvSerialization.MapPost);
+            IEnumerable<ScrapedPost> history = AllPosts(0, int.MaxValue, null, descending, since, until).AllData();
+
+            byte[] serialized = CsvSerialization.Serialize(history, CsvSerialization.MapPost);
             return File(serialized, "text/csv", "export.csv");
+        }
+
+        [HttpGet("export/json")]
+        public IActionResult ExportPagesAsJson(bool? descending, DateTime? since, DateTime? until)
+        {
+            IEnumerable<ScrapedPost> history = AllPosts(0, int.MaxValue, null, descending, since, until).AllData();
+
+            byte[] serialized = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(history));
+            return File(serialized, "application/json-download", "export.json");
         }
 
         public class PostScrapeRequest

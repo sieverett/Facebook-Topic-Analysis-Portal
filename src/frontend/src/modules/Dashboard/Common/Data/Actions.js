@@ -39,6 +39,21 @@ export const sendRequest = (endpoint, method, params, result) => {
     }
   }
 
+  const download = (response, name) => {
+    return response.blob().then(blob => {
+      const url = window.URL.createObjectURL(blob);
+      
+      let a = document.createElement("a");
+      document.body.appendChild(a);
+      a.style = 'display: none';
+      a.href = url;
+      a.download = name;
+      a.click();
+
+      window.URL.revokeObjectURL(url);
+    });
+  };
+
   let responseTemp;
   return fetch(WebApi + endpoint, {method, headers, body})
     .then(response => {
@@ -50,22 +65,13 @@ export const sendRequest = (endpoint, method, params, result) => {
       }
 
       const contentType = response.headers.get('content-type');
-      if (contentType.includes('application/json')) {
+      if (contentType.includes('text/csv')) {
+        download(response, 'export.csv');
+      } else if (contentType.includes('application/json-download')) {
+        download(response, 'export.json');
+      } else if (contentType.includes('application/json')) {
         return response.json().then(json => {
           result(json, null);
-        });
-      } else if (contentType.includes('text/csv')) {
-        return response.blob().then(blob => {
-          const url = window.URL.createObjectURL(blob);
-          
-          let a = document.createElement("a");
-          document.body.appendChild(a);
-          a.style = 'display: none';
-          a.href = url;
-          a.download = 'export.csv';
-          a.click();
-
-          window.URL.revokeObjectURL(url);
         });
       } else {
         throw new Error(`Invalid content type ${contentType} returned from the backend.`);
@@ -127,8 +133,8 @@ export function scrapePosts(since, until) {
   return callAPI('/api/dashboard/scrape/post/scrape', 'POST', {since, until}, SCRAPE_POSTS_DONE);
 }
 
-export function exportPosts(since, until, handler) {
-  return sendRequest('/api/dashboard/scrape/post/export', 'GET', {since, until}, null, handler);
+export function exportPosts(contentType, since, until, handler) {
+  return sendRequest(`/api/dashboard/scrape/post/export/${contentType}`, 'GET', {since, until}, null, handler);
 }
 
 // Section: post scraping history.
@@ -170,8 +176,8 @@ export function scrapePages(pages) {
   return callAPI('/api/dashboard/scrape/page/scrape', 'POST', pages, SCRAPE_PAGES_DONE);
 }
 
-export function exportPages(since, until, handler) {
-  return sendRequest('/api/dashboard/scrape/page/history/export', 'GET', {since, until}, null, handler);
+export function exportPages(contentType, since, until, handler) {
+  return sendRequest(`/api/dashboard/scrape/page/history/export/${contentType}`, 'GET', {since, until}, null, handler);
 }
 
 // Section: page scraping history.

@@ -9,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using FacebookCivicInsights.Data.Scraper;
 using Nest;
-using Elasticsearch.Net;
 
 namespace FacebookCivicInsights
 {

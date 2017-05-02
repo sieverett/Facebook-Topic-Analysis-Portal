@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 using Elasticsearch.Net;
 using Facebook;
@@ -36,6 +35,8 @@ namespace FacebookCivicInsights.Data
         public const int DefaultPageNumber = 1;
         private const int DefaultPageSize = 50;
         public const int MaxPageSize = 10000;
+
+        public static PagedResponse MaxPaging => new PagedResponse(DefaultPageNumber, MaxPageSize);
 
         public ElasticSearchPagedResponse<T> Paged(PagedResponse paging = null, Ordering<T> ordering = null, Func<QueryContainerDescriptor<T>, QueryContainer> search = null)
         {
@@ -144,18 +145,6 @@ namespace FacebookCivicInsights.Data
             response.Since = since;
             response.Until = until;
             return response;
-        }
-
-        public static byte[] Export<T>(this ElasticSearchRepository<T> repository,
-            Ordering<T> ordering,
-            Expression<Func<T, object>> searchPath, DateTime? since, DateTime? until,
-            Func<T, dynamic> mapping) where T : class, new()
-        {
-            var paging = new PagedResponse(ElasticSearchRepository<T>.DefaultPageNumber, ElasticSearchRepository<T>.MaxPageSize);
-            Func<QueryContainerDescriptor<T>, QueryContainer> search = GetSearch(searchPath, since, until);
-
-            IEnumerable<T> data = repository.Paged<ElasticSearchPagedResponse<T>>(paging, ordering, search).AllData();
-            return CsvSerialization.Serialize(data, mapping);
         }
     }
 }
