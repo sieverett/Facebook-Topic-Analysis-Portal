@@ -8,7 +8,7 @@ import LoadingIndicator from '../Components/Common/LoadingIndicator';
 import Panel from '../Components/Common/Panel';
 import DateRangeForm from '../Components/Common/DateRangeForm';
 
-class Browse extends Component {
+class Posts extends Component {
   state = {}
 
   // Load the up-to-date list of posts each time the page is refreshed or loaded.
@@ -50,15 +50,15 @@ class Browse extends Component {
   
   table = (posts) => {
     const mapping = [
-      {name: 'Page Id',      key: path => path.page.name                                                                        },
-      {name: 'Created Time', key: path => showDate(path.created_time),              orderingKey: 'created_time'                 },
-      {name: 'Type',         key: path => path.type                                                                             },
-      {name: 'Message',      key: path => path.message                                                                          },
-      {name: 'Comments',     key: path => path.comments.summary.total_count,        orderingKey: 'comments.summary.total_count' },
-      {name: 'Reactions',    key: path => path.reactions.summary.total_count,       orderingKey: 'reactions.summary.total_count'},
-      {name: 'Shares',       key: path => path.shares.count,                        orderingKey: 'shares.count'                 },
-      {name: 'Status Type',  key: path => path.status_type                                                                      },
-      {name: 'Permalink',    key: path => <a href={path.permalink_url}>Facebook</a>                                             }
+      {name: 'Page Id',      key: post => post.page.name                                                                        },
+      {name: 'Created Time', key: post => showDate(post.created_time),              orderingKey: 'created_time'                 },
+      {name: 'Type',         key: post => post.type                                                                             },
+      {name: 'Message',      key: post => post.message                                                                          },
+      {name: 'Comments',     key: post => post.comments.summary.total_count,        orderingKey: 'comments.summary.total_count' },
+      {name: 'Reactions',    key: post => post.reactions.summary.total_count,       orderingKey: 'reactions.summary.total_count'},
+      {name: 'Shares',       key: post => post.shares.count,                        orderingKey: 'shares.count'                 },
+      {name: 'Status Type',  key: post => post.status_type                                                                      },
+      {name: 'Permalink',    key: post => <a href={post.permalink_url}>Facebook</a>                                             }
     ];
 
     return (
@@ -87,6 +87,6 @@ class Browse extends Component {
     );
   }
 }
-Browse.contextTypes = {store: React.PropTypes.object};
+Posts.contextTypes = {store: React.PropTypes.object};
 
-export default Browse;
+export default Posts;
