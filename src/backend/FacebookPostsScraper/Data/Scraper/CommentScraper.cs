@@ -22,6 +22,7 @@ namespace FacebookCivicInsights.Data.Scraper
         public IEnumerable<ScrapedComment> Scrape(ScrapedPost post)
         {
             Debug.Assert(post != null);
+            var comments = new List<ScrapedComment>();
 
             DateTime now = DateTime.Now;
             CommentsRequest graphRequest = new CommentsRequest(post.Id) { PaginationLimit = 100 };
@@ -34,10 +35,10 @@ namespace FacebookCivicInsights.Data.Scraper
                 comment.LastScraped = now;
                 comment.Post = post;
 
-                Save(comment, Refresh.False);
-
-                yield return comment;
+                comments.Add(Save(comment, Refresh.False));
             }
+
+            return comments;
         }
     }
 }
