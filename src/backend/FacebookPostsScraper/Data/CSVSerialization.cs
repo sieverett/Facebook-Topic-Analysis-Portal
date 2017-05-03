@@ -97,7 +97,7 @@ namespace FacebookCivicInsights.Data
             flattened.CreatedTime = comment.CreatedTime;
             flattened.UpdatedTime = comment.UpdatedTime;
 
-            flattened.FirstScraped = comment.Created;
+            flattened.FirstScraped = comment.FirstScraped;
             flattened.LastScraped = comment.LastScraped;
 
             return flattened;

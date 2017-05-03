@@ -19,7 +19,7 @@ namespace FacebookCivicInsights.Data.Scraper
             GraphClient = graphClient;
         }
 
-        public IEnumerable<ScrapedComment> Scrape(Post post)
+        public IEnumerable<ScrapedComment> Scrape(ScrapedPost post)
         {
             Debug.Assert(post != null);
 
@@ -27,9 +27,9 @@ namespace FacebookCivicInsights.Data.Scraper
             CommentsRequest graphRequest = new CommentsRequest(post.Id) { PaginationLimit = 100 };
             foreach (ScrapedComment comment in GraphClient.GetComments<ScrapedComment>(graphRequest).AllData())
             {
-                if (comment.Created == DateTime.MinValue)
+                if (comment.FirstScraped == DateTime.MinValue)
                 {
-                    comment.Created = now;
+                    comment.FirstScraped = now;
                 }
                 comment.LastScraped = now;
                 comment.Post = post;
