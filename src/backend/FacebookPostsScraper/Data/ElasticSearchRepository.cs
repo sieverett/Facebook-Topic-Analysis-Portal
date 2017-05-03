@@ -27,6 +27,10 @@ namespace FacebookCivicInsights.Data
         public T Save(T data, Refresh refresh = Refresh.WaitFor)
         {
             IIndexResponse response = Client.Index(data, idx => idx.Index(DefaultIndex).Refresh(refresh));
+            if (!response.IsValid)
+            {
+                throw new InvalidOperationException(response.ServerError.ToString());
+            }
             return data;
         }
 
