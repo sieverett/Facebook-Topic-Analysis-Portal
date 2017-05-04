@@ -81,7 +81,7 @@ namespace FacebookCivicInsights.Data.Scraper
                 post.GeoPoint = null;
             }
 
-            ScrapedPage scrapedPage = PageScraper.Closest(pageName, post.CreatedTime);
+            ScrapedPage scrapedPage = PageScraper.Closest(p => p.Name, pageName, post.CreatedTime);
             post.Page = scrapedPage;
 
             post.LastScraped = DateTime.Now;

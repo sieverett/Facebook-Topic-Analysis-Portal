@@ -7,6 +7,7 @@ using Facebook.Models;
 using Facebook.Requests;
 using FacebookCivicInsights.Models;
 using Nest;
+using System.Linq.Expressions;
 
 namespace FacebookCivicInsights.Data.Scraper
 {
@@ -51,16 +52,16 @@ namespace FacebookCivicInsights.Data.Scraper
             Console.WriteLine($"Done scraping {pages.Length} pages");
         }
 
-        public ScrapedPage Closest(string name, DateTime date)
+        public ScrapedPage Closest(Expression<Func<ScrapedPage, string>> field, string query, DateTime date)
         {
             // Get all the pages with the display name within +- 1 week of the specified date.
             IEnumerable<ScrapedPage> pages = Paged(search: q =>
             {
-                return q.Match(m => m.Field("name").Query(name)) && q.DateRange(d =>
+                return q.Match(m => m.Field(field).Query(query)) && q.DateRange(d =>
                 {
-                    return d.Field("date").LessThanOrEquals(date.AddDays(3)).GreaterThanOrEquals(date.AddDays(-3));
+                    return d.Field("date").LessThanOrEquals(date.AddDays(4)).GreaterThanOrEquals(date.AddDays(-4));
                 });
-            }).Data.Where(p => p.Name == name);
+            }).Data.Where(p => field.Compile()(p) == query);
 
             // Get the closest date to the specified date.
             IEnumerable<ScrapedPage> closestPages = pages.OrderBy(p => (p.Date - date).Duration());

@@ -146,7 +146,7 @@ namespace FacebookCivicInsights.Data.Importer
                     }
 
                     // Add this to the fan count history.
-                    ScrapedPage savedPage = PageScraper.Closest(mappedPage.Name, date);
+                    ScrapedPage savedPage = PageScraper.Closest(p => p.Name, mappedPage.Name, date);
                     if (savedPage == null || savedPage.Date != date)
                     {
                         // Page doesn't have this date already. Add it.

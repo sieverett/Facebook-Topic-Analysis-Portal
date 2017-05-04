@@ -118,7 +118,11 @@ namespace FacebookCivicInsights.Data
                 throw new InvalidOperationException("No such object");
             }
 
-            Client.Delete<T>(id);
+            IDeleteResponse response = Client.Delete<T>(id);
+            if (!response.IsValid)
+            {
+                throw new InvalidOperationException(response.ServerError.ToString());
+            }
             return deletedDocument;
         }
     }
