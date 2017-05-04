@@ -165,6 +165,10 @@ namespace FacebookCivicInsights.Controllers.Dashboard
                 foreach (ScrapedPost post in response.Data)
                 {
                     i++;
+                    if (post.CreatedTime < new DateTime(2017, 04, 01)
+                    {
+                        continue;
+                    }
                     if (i > LastScrapeAmount)
                     {
                         List<ScrapedComment> comments = CommentScraper.Scrape(post).ToList();
