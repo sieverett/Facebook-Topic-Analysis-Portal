@@ -157,14 +157,23 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         [HttpGet("and_so_it_begins")]
         public void GoThroughEachPostAndGetTheCommentsOhMyGodThisWillDestroyMyLaptop()
         {
-            int i = 1;
+            const int LastScrapeAmount = 750;
+            int i = 0;
             ElasticSearchPagedResponse<ScrapedPost> paged = PostScraper.Paged(new PagedResponse(0, int.MaxValue), new Ordering<ScrapedPost>("created_time", true));
             foreach (ElasticSearchPagedResponse<ScrapedPost> response in paged.AllPages())
             {
                 foreach (ScrapedPost post in response.Data)
                 {
-                    List<ScrapedComment> comments = CommentScraper.Scrape(post).ToList();
-                    Console.WriteLine($"{i++}/{response.TotalCount}: {post.Id}; {comments.Count}");
+                    i++;
+                    if (i > LastScrapeAmount)
+                    {
+                        List<ScrapedComment> comments = CommentScraper.Scrape(post).ToList();
+                        Console.WriteLine($"{i}/{response.TotalCount}: {post.Id}; {comments.Count}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"{i}/{response.TotalCount}: {post.Id}; Already scraped.");
+                    }
                 }
             }
         }
