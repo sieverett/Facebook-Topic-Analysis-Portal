@@ -72,7 +72,21 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         }
 
         [HttpGet("{id}")]
-        public PageMetadata Get(string id) => PageRepository.Get(id);
+        public PageMetadata Get(string id)
+        {
+            PageMetadata page = PageRepository.Get(id);
+            if (page != null)
+            {
+                return null;
+            }
+
+            // Page doesn't exist, find it by the facebook Id.
+            PageMetadata pageByFacebookId = PageRepository.Paged(search: q =>
+            {
+                return q.Match(m => m.Field(p => p.FacebookId).Query(id));
+            }).Data.FirstOrDefault();
+            return pageByFacebookId;
+        }
 
         [HttpPatch("{id}")]
         public PageMetadata Update(string id, [FromBody]PageMetadata updatedPage)
