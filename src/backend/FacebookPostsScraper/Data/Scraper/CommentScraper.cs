@@ -23,19 +23,25 @@ namespace FacebookCivicInsights.Data.Scraper
         {
             Debug.Assert(post != null);
             var comments = new List<ScrapedComment>();
-
             DateTime now = DateTime.Now;
-            CommentsRequest graphRequest = new CommentsRequest(post.Id) { PaginationLimit = 100 };
-            foreach (ScrapedComment comment in GraphClient.GetComments<ScrapedComment>(graphRequest).AllData())
-            {
-                if (comment.FirstScraped == DateTime.MinValue)
-                {
-                    comment.FirstScraped = now;
-                }
-                comment.LastScraped = now;
-                comment.Post = post;
 
-                comments.Add(Save(comment, Refresh.False));
+            CommentsRequest graphRequest = new CommentsRequest(post.Id) { PaginationLimit = 100 };
+            PagedResponse<ScrapedComment> commentsResponse = GraphClient.GetComments<ScrapedComment>(graphRequest);
+
+            // Could be null if the post doesn't exist anymore.
+            if (commentsResponse != null)
+            {
+                foreach (ScrapedComment comment in commentsResponse.AllData())
+                {
+                    if (comment.FirstScraped == DateTime.MinValue)
+                    {
+                        comment.FirstScraped = now;
+                    }
+                    comment.LastScraped = now;
+                    comment.Post = post;
+
+                    comments.Add(Save(comment, Refresh.False));
+                }
             }
 
             return comments;
