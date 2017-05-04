@@ -51,7 +51,7 @@ class Comments extends Component {
   table = (posts) => {
     const mapping = [
       {name: 'Page',         key: comment => <a href={`pages/${comment.post.from.id}`}>{comment.post.from.name}</a>                                                            },
-      {name: 'From',         key: comment => comment.from.name                                                                                                                 },
+      {name: 'From',         key: comment => <a href={`https://facebook.com/${comment.from.id}`}>{comment.from.name}</a>                                                       },
       {name: 'Message',      key: comment => comment.message                                                                                                                   },
       {name: 'Created Time', key: comment => showDate(comment.created_time),                                                                      orderingKey: 'created_time'  },
       {name: 'Likes',        key: comment => <span><strong>{comment.like_count}</strong> <small className="text-muted">Likes</small></span>,      orderingKey: 'like_count'    },
