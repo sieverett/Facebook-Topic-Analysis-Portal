@@ -84,7 +84,13 @@ namespace FacebookCivicInsights.Data.Importer
                         { "mocommerce",           PageMetadataRepository.Get("Ministry of Commerce") },
 
                         { "cambodia express news",  PageMetadataRepository.Get("Cambodia Express News") },
-                        { "cambodian express news", PageMetadataRepository.Get("Cambodia Express News") }
+                        { "cambodian express news", PageMetadataRepository.Get("Cambodia Express News") },
+
+                        { "fresh news", PageMetadataRepository.Get("Fresh News") },
+
+                        { "koh santepheap daily", PageMetadataRepository.Get("Koh Santepheap Daily") },
+
+                        { "cambodian-peoples-party-1582014712074227", PageMetadataRepository.Get("Cambodian People's Party 2") }
                     };
                 }
 
@@ -119,7 +125,14 @@ namespace FacebookCivicInsights.Data.Importer
             Read(fanCountCSVs, record =>
             {
                 // The date is a string in a 2016-12-25 format.
-                DateTime date = DateTime.ParseExact((string)record["Dates"], "yyyy-MM-dd", null);
+                string dateString = (string)record["Dates"];
+                if (dateString == "Date" || dateString == "")
+                {
+                    // Skip the header if it isn't parsed.
+                    return;
+                }
+
+                DateTime date = DateTime.ParseExact(dateString, "yyyy-MM-dd", null);
 
                 // Now get the list of all the pages.
                 foreach (string pageName in record.Keys)

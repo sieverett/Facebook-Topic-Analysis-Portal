@@ -89,7 +89,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         public IEnumerable<ScrapedPage> ImportPages()
         {
             var importer = new ScrapeImporter(PageScraper, PageMetadataRepository, null);
-            IEnumerable<string> files = Directory.EnumerateFiles("C:\\Users\\hughb\\Documents\\TAF\\Data", "*.csv", SearchOption.AllDirectories);
+            IEnumerable<string> files = Directory.EnumerateFiles("C:\\Users\\hugh\\Downloads", "*.csv", SearchOption.AllDirectories);
             IEnumerable<string> fanCountFiles = files.Where(f => f.Contains("count"));
 
             return importer.ImportPages(fanCountFiles);

@@ -157,7 +157,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         [HttpGet("and_so_it_begins")]
         public void GoThroughEachPostAndGetTheCommentsOhMyGodThisWillDestroyMyLaptop()
         {
-            const int LastScrapeAmount = 750;
+            const int LastScrapeAmount = 0;
             int i = 0;
             ElasticSearchPagedResponse<ScrapedPost> paged = PostScraper.Paged(new PagedResponse(0, int.MaxValue), new Ordering<ScrapedPost>("created_time", true));
             foreach (ElasticSearchPagedResponse<ScrapedPost> response in paged.AllPages())
