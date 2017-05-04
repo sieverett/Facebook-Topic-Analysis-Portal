@@ -23,7 +23,7 @@ class Comments extends Component {
   
   handleExport = (contentType, since, until) => exportComments(contentType, since, until, (_, errorMessage) => {});
 
-  handleRowSelection = (data, index) => window.location.href += '/' + data.id;
+  handleRowSelection = (data, index) => window.location.href += `/../posts/${data.post.id}`;
 
   handleOrderingChanged = (orderingKey, descending) => this.getComments(null, null, null, null, orderingKey, descending);
 
