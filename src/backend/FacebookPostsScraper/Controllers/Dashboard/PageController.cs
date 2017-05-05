@@ -113,7 +113,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         {
             return PageRepository.All<TimeSearchResponse<PageMetadata>, PageMetadata>(
                 new PagedResponse(pageNumber, pageSize),
-                new Ordering<PageMetadata>("created", descending),
+                new Ordering<PageMetadata>("name", descending),
                 p => p.Created, since, until);
         }
 
