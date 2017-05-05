@@ -165,7 +165,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
                 foreach (ScrapedPost post in response.Data)
                 {
                     i++;
-                    if (post.CreatedTime < new DateTime(2017, 04, 01)
+                    if (post.CreatedTime < new DateTime(2017, 04, 01))
                     {
                         continue;
                     }

@@ -1,16 +1,19 @@
 import React, { Component } from 'react';
+import { getPages } from '../../Common/Data/Actions';
 import DataTable from '../Common/Data/DataTable';
 import ErrorPanel from '../Common/ErrorPanel';
 import LoadingIndicator from '../Common/LoadingIndicator';
 import Modal from '../Common/Modal';
 import Panel, { PanelHeading } from '../Common/Panel';
 
-class ScrapePageForm extends Component {
+class PageSelectionList extends Component {
   state = {selectedRows: [], modalId: 'import-pages-modal'}
 
   // Select all pages by default.
-  componentWillMount = () => this.selectAll();
-  componentWillReceiveProps = (nextProps) => this.selectAll();
+  componentWillMount = () => {
+    this.selectAll();
+    this.context.store.dispatch(getPages()).then(this.selectAll);
+  }
 
   handleSubmit = (event) => {
     event.preventDefault();
@@ -30,7 +33,7 @@ class ScrapePageForm extends Component {
   }
 
   handlePanelClicked = () => this.state.selectedRows.length === 0 ? this.selectAll() : this.setState({selectedRows: []});
-  selectAll = () => this.setState({selectedRows: this.props.pages.data.map(p => p.id)});
+  selectAll = () => this.setState({selectedRows: this.context.store.getState().pages.data.map(p => p.id)});
 
   isRowSelected = (data, index) => this.state.selectedRows.includes(data.id);
 
@@ -47,7 +50,7 @@ class ScrapePageForm extends Component {
   }
 
   pageList() {
-    const { pages, errorMessage } = this.props;
+    const { pages, errorMessage } = this.context.store.getState();
     const mapping = [ 'Name' ];
     if (errorMessage) {
       return <ErrorPanel message={errorMessage} />;
@@ -63,7 +66,7 @@ class ScrapePageForm extends Component {
   render() {
     // If nothing is selected, show a "Select All" button. Else show a "Clear" button.
     const panelButtonTitle = this.state.selectedRows.length === 0 ? 'All' : 'Clear';
-    const panelHeading = <PanelHeading title="Scrape Pages" buttonTitle={panelButtonTitle} onClick={this.handlePanelClicked} />;
+    const panelHeading = <PanelHeading title={this.props.title} buttonTitle={panelButtonTitle} onClick={this.handlePanelClicked} />;
 
     return (
       <Panel className="col-md-4" table heading={panelHeading}>
@@ -80,5 +83,6 @@ class ScrapePageForm extends Component {
     );
   }
 }
+PageSelectionList.contextTypes = {store: React.PropTypes.object};
 
-export default ScrapePageForm;
+export default PageSelectionList;

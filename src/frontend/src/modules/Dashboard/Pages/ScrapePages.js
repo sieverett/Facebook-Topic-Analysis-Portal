@@ -1,16 +1,13 @@
 import React, { Component } from 'react';
-import { getPageScrapes, exportPages, getPages, scrapePages } from '../Common/Data/Actions';
+import { getPageScrapes, exportPages, scrapePages } from '../Common/Data/Actions';
 import Panel from '../Components/Common/Panel';
+import PageSelectionList from '../Components/Common/PageSelectionList';
 import ExportPages from '../Components/ScrapePages/ExportPages';
 import PageScrapeList from '../Components/ScrapePages/PageScrapeList';
-import ScrapePageForm from '../Components/ScrapePages/ScrapePageForm';
 
 class ScrapePages extends Component {
   // Load the up-to-date scrape history each time the page is refreshed or loaded.
-  componentWillMount () {
-    this.getScrapes();
-    this.context.store.dispatch(getPages());
-  }
+  componentWillMount = () => this.getScrapes();
 
   getScrapes = (newPageNumber, newPageSize, since, until) => {
     const { pageNumber, pageSize } = this.context.store.getState().pageScrapes;
@@ -28,7 +25,7 @@ class ScrapePages extends Component {
 
     return (
       <section>
-        <ScrapePageForm pages={pages} errorMessage={errorMessage} onSubmit={this.handleScrapePages} />
+        <PageSelectionList title="Scrape" onSubmit={this.handleScrapePages} />
         <section className="col-md-8">
           <ExportPages onSubmit={(since, until) => this.getScrapes(null, null, since, until)} onExport={contentType => this.handleExport(contentType, pages.since, pages.until)} />
           <Panel showHeading={false} table={true}>
