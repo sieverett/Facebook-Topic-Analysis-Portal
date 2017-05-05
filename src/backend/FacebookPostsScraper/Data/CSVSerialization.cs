@@ -55,7 +55,7 @@ namespace FacebookCivicInsights.Data
             flattened.StatusType = post.StatusType;
             flattened.Type = post.Type;
 
-            flattened.Reactions = post.Reactions.Summary.TotalCount;
+            flattened.Reactions = post.Reactions.Summary?.TotalCount ?? 0;
             flattened.Comments = post.Comments.Summary.TotalCount;
             flattened.Shares = post.Shares.Count;
 
