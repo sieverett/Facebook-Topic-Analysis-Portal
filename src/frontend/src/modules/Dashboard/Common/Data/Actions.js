@@ -146,8 +146,11 @@ export function scrapePosts(since, until) {
   return callAPI('/api/dashboard/scrape/post/scrape', 'POST', {since, until}, SCRAPE_POSTS_DONE);
 }
 
-export function exportPosts(contentType, since, until, handler) {
-  return sendRequest(`/api/dashboard/scrape/post/export/${contentType}`, 'POST', {since, until}, null, handler);
+export function exportPosts(contentType, since, until, pages, handler) {
+  const extra = pages ? [es.terms('page.facebookId', pages)] : [];
+  const query = createQuery('created_time', since, until, extra);
+  const sort = createSort('created_time', true);
+  return sendRequest(`/api/dashboard/scrape/post/export/${contentType}`, 'POST', {query, sort}, null, handler);
 }
 
 // Section: post scraping history.

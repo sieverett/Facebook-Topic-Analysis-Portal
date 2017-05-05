@@ -16,7 +16,11 @@ class Posts extends Component {
   componentWillMount = () => this.getPosts();
 
   getPosts = (newPageNumber, newPageSize, newSince, newUntil, newPages, newOrderingKey, newOrderingDescending) => {
-    const { pageNumber, pageSize, since, until, pages, sort } = this.context.store.getState().posts;
+    const { pageNumber, pageSize, sort } = this.context.store.getState().posts;
+    const since = newSince || this.state.since;
+    const until = newUntil || this.state.until;
+    const pages = newPages || this.state.pages;
+
     const orderingKey = newOrderingDescending === undefined && sort ? sort[0].field : newOrderingKey;
     const descending = newOrderingDescending === undefined && sort ? sort[0].order === 'desc' : newOrderingDescending;
     this.context.store.dispatch(getPosts(
@@ -24,13 +28,18 @@ class Posts extends Component {
       newPageSize || pageSize,
       newSince || since,
       newUntil || until,
-      pages || newPages,
+      pages,
       orderingKey,
       descending
     ));
+
+    this.setState({pages, since, until});
   }
   
-  handleExport = (contentType, since, until) => exportPosts(contentType, since, until, (_, errorMessage) => {});
+  handleExport = (contentType, since, until) => {
+    const { pages } = this.state;
+    exportPosts(contentType, since, until, pages, (_, errorMessage) => {});
+  }
 
   handleRowSelection = (data, index) => window.location.href += '/' + data.id;
 

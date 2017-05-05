@@ -15,10 +15,22 @@ class Comments extends Component {
   componentWillMount = () => this.getComments();
 
   getComments = (newPageNumber, newPageSize, newSince, newUntil, newOrderingKey, newOrderingDescending) => {
-    const { pageNumber, pageSize, since, until, sort } = this.context.store.getState().comments;
+    const { pageNumber, pageSize, sort } = this.context.store.getState().comments;
+    const since = newSince || this.state.since;
+    const until = newUntil || this.state.until;
+
     const orderingKey = newOrderingDescending === undefined && sort ? sort[0].field : newOrderingKey;
     const descending = newOrderingDescending === undefined && sort ? sort[0].order === 'desc' : newOrderingDescending;
-    this.context.store.dispatch(getComments(newPageNumber || pageNumber, newPageSize || pageSize, newSince || since, newUntil || until, orderingKey, descending));
+    this.context.store.dispatch(getComments(
+      newPageNumber || pageNumber,
+      newPageSize || pageSize,
+      newSince || since,
+      newUntil || until,
+      orderingKey,
+      descending
+    ));
+    
+    this.setState({since, until});
   }
   
   handleExport = (contentType, since, until) => exportComments(contentType, since, until, (_, errorMessage) => {});
