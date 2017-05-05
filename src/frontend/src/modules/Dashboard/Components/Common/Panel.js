@@ -5,8 +5,8 @@ class PanelHeading extends Component {
 
   render() {
     return (
-      <div className="clearfix">
-        <h4 className="pull-left">{this.props.title}</h4>
+      <div className="clearfix custom-panel-header">
+        <h4 className="header">{this.props.title}</h4>
         <a className="btn btn-default pull-right" onClick={this.handleOnClick}>{this.props.buttonTitle}</a>
       </div>
     );

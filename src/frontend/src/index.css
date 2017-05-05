@@ -176,6 +176,18 @@ body {
     margin-left: 20px;
 }
 
+.custom-panel-header {
+    overflow: hidden;
+}
+
+.custom-panel-header .header {
+    display: inline-block;
+}
+
+.custom-panel-header .btn {
+    vertical-align: middle;
+}
+
 .selected-cell {
     float: right;
     margin-right: 1em;
