@@ -109,12 +109,14 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         }
 
         [HttpGet("all")]
-        public PagedResponse AllPages(int pageNumber, int pageSize, bool? descending, DateTime? since, DateTime? until)
+        public PagedResponse AllPages(int pageNumber, int pageSize, DateTime? since, DateTime? until)
         {
-            return PageRepository.All<TimeSearchResponse<PageMetadata>, PageMetadata>(
+            PagedResponse<PageMetadata> response =  PageRepository.All<TimeSearchResponse<PageMetadata>, PageMetadata>(
                 new PagedResponse(pageNumber, pageSize),
-                new Ordering<PageMetadata>("name", descending),
+                new Ordering<PageMetadata>("created", null),
                 p => p.Created, since, until);
+            response.Data = response.Data.OrderBy(p => p.Name);
+            return response;
         }
 
         [HttpDelete("{id}")]

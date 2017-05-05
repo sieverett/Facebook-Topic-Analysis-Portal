@@ -69,13 +69,13 @@ class PageSelectionList extends Component {
     const panelHeading = <PanelHeading title={this.props.title} buttonTitle={panelButtonTitle} onClick={this.handlePanelClicked} />;
 
     return (
-      <Panel className="col-md-4" table heading={panelHeading}>
+      <Panel className={this.props.className || ''} table heading={panelHeading}>
         <form onSubmit={this.handleSubmit}>
           <div className="form-group">
             {this.pageList()}
           </div>
           <div className="panel-footer">
-            <input type="submit" className="btn btn-primary btn-block" value="Scrape" />
+            <input type="submit" className="btn btn-primary btn-block" value={this.props.title} />
           </div>
         </form>
         <Modal id={this.state.modalId} title="Cannot scrape page">{this.state.errorMessage}</Modal>

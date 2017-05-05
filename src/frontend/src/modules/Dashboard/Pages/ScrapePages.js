@@ -25,7 +25,7 @@ class ScrapePages extends Component {
 
     return (
       <section>
-        <PageSelectionList title="Scrape" onSubmit={this.handleScrapePages} />
+        <PageSelectionList title="Scrape" className="col-md-4" onSubmit={this.handleScrapePages} />
         <section className="col-md-8">
           <ExportPages onSubmit={(since, until) => this.getScrapes(null, null, since, until)} onExport={contentType => this.handleExport(contentType, pages.since, pages.until)} />
           <Panel showHeading={false} table={true}>
