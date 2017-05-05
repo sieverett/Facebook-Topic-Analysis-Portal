@@ -34,7 +34,14 @@ namespace FacebookCivicInsights.Data
             flattened.Id = post.Id;
             flattened.Message = post.Message;
 
-            flattened.Topics = string.Join(",", post.Topics);
+            if (post.Topics == null)
+            {
+                flattened.Topics = "";
+            }
+            else
+            {
+                flattened.Topics = string.Join(",", post.Topics);
+            }
 
             flattened.Link = post.Link;
             flattened.Caption = post.Caption;
