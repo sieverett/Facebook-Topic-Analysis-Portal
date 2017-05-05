@@ -4,13 +4,17 @@ using Elasticsearch.Net;
 using Facebook;
 using Nest;
 using System.Linq;
+using System.Collections.Generic;
+using Newtonsoft.Json;
+using System.Text;
+using System.IO;
 
 namespace FacebookCivicInsights.Data
 {
     public class ElasticSearchRepository<T> where T: class, new()
     {
         private string DefaultIndex { get; }
-        private ElasticClient Client { get; }
+        public ElasticClient Client { get; }
 
         public ElasticSearchRepository(ConnectionSettings settings, string defaultIndex, Func<CreateIndexDescriptor, ICreateIndexRequest> createIndex = null)
         {
@@ -40,71 +44,67 @@ namespace FacebookCivicInsights.Data
         private const int DefaultPageSize = 50;
         public const int MaxPageSize = 10000;
 
-        public ElasticSearchPagedResponse<T> Paged(PagedResponse paging = null, Ordering<T> ordering = null, Func<QueryContainerDescriptor<T>, QueryContainer> search = null)
+        public AllResponse<T> All(object query = null, IList<SortField> sort = null)
         {
-            return Paged<ElasticSearchPagedResponse<T>>(paging, ordering, search);
+            ElasticSearchPagedResponse<T> response = Paged(0, int.MaxValue, query, sort);
+            return new AllResponse<T>
+            {
+                Data = response.AllData(),
+                TotalCount = response.TotalCount
+            };
         }
 
-        public TPaging Paged<TPaging>(PagedResponse paging = null, Ordering<T> ordering = null, Func<QueryContainerDescriptor<T>, QueryContainer> search = null) where TPaging : ElasticSearchPagedResponse<T>, new()
+        public ElasticSearchPagedResponse<T> Paged(int pageNumber, int pageSize, object query = null, IList<SortField> sort = null)
+        {
+            QueryContainer queryContainer = query as QueryContainer;
+            if (queryContainer == null && query != null)
+            {
+                string stringRepresentation = JsonConvert.SerializeObject(query);
+                queryContainer = new QueryContainer(new RawQuery(stringRepresentation));/*
+                using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(stringRepresentation)))
+                {
+                    queryContainer = Client.Serializer.Deserialize<QueryContainer>(stream);
+                }*/
+            }
+
+            return Paged(pageNumber, pageSize, queryContainer, sort);
+        }
+
+        public ElasticSearchPagedResponse<T> Paged(int pageNumber, int pageSize, QueryContainer query, IList<SortField> sort)
         {
             // If the page number was invalid, use the default page number.
-            int pageNumber = DefaultPageNumber;
-            if (paging?.PageNumber >= DefaultPageNumber)
-            {
-                pageNumber = paging.PageNumber;
-            }
+            pageNumber = Math.Max(DefaultPageNumber, pageNumber);
 
             // If the page size was invalid, use the default page size.
-            int pageSize = DefaultPageSize;
-            if (paging != null && paging.PageSize > 0)
-            {
-                pageSize = Math.Min(paging.PageSize, MaxPageSize);
-            }
+            pageSize = Math.Max(DefaultPageSize, pageSize);
+            pageSize = Math.Min(pageSize, MaxPageSize);
 
-            var content = new TPaging
+            var content = new ElasticSearchPagedResponse<T>
             {
                 Repository = this,
-                Search = search,
-                Ordering = ordering,
+                Query = query,
+                Sort = sort,
                 PageNumber = pageNumber,
                 PageSize = pageSize
             };
 
             // Page numbers start at 0 for Elasticsearch.
             int from = (content.PageNumber - 1) * pageSize;
-            ISearchResponse<T> searchResponse = Client.Search<T>(s =>
+            ISearchResponse<T> searchResponse = Client.Search<T>(new SearchRequest<T>
             {
-                s = s.From(from).Size(pageSize);
-
-                // The user can specify an ordering of the data returned.
-                if (ordering != null)
-                {
-                    if (ordering.Descending)
-                    {
-                        s = s.Sort(sort => sort.Descending(ordering.Key));
-                    }
-                    else
-                    {
-                        s = s.Sort(sort => sort.Ascending(ordering.Key));
-                    }
-                }
-
-                // The user can specify a search query to filter data.
-                if (search != null)
-                {
-                    s = s.Query(search);
-                }
-
-                return s;
+                Query = query,
+                ///Sort = sort?.Cast<ISort>()?.ToList(),
+                From = from,
+                Size = pageSize
             });
-
+            string s  = Client.Serializer.SerializeToString(query);
             content.Data = searchResponse.Documents.ToArray();
             content.TotalCount = searchResponse.Total;
 
             // If the page number is not in range, use the default search.
             if (content.StartItemIndex > content.TotalCount)
             {
-                return Paged<TPaging>(null, ordering, search);
+                return Paged(-1, -1, query, sort);
             }
 
             return content;
@@ -124,33 +124,6 @@ namespace FacebookCivicInsights.Data
                 throw new InvalidOperationException(response.ServerError.ToString());
             }
             return deletedDocument;
-        }
-    }
-
-    public static class ElasticSearchRepositoryExtensions
-    {
-        private static Func<QueryContainerDescriptor<T>, QueryContainer> GetSearch<T>(Expression<Func<T, object>> searchPath, DateTime? since, DateTime? until) where T : class, new()
-        {
-            return query =>
-            {
-                return query.DateRange(d =>
-                {
-                    return d.Field(searchPath).GreaterThanOrEquals(since ?? DateTime.MinValue)
-                                              .LessThanOrEquals(until ?? DateTime.MaxValue);
-                });
-            };
-        }
-
-        public static TResponse All<TResponse, T>(this ElasticSearchRepository<T> repository,
-            PagedResponse paging, Ordering<T> ordering,
-            Expression<Func<T, object>> searchPath, DateTime? since, DateTime? until) where T : class, new() where TResponse : TimeSearchResponse<T>, new()
-        {
-            Func<QueryContainerDescriptor<T>, QueryContainer> search = GetSearch(searchPath, since, until);
-            TResponse response = repository.Paged<TResponse>(paging, ordering, search);
-            response.Ordering = ordering;
-            response.Since = since;
-            response.Until = until;
-            return response;
         }
     }
 }

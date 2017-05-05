@@ -1,6 +1,7 @@
 import 'whatwg-fetch';
 import moment from 'moment';
 import { WebApi } from '../../../../config';
+import * as es from './ElasticSearch';
 
 export const sendRequest = (endpoint, method, params, result) => {
   var headers;
@@ -116,17 +117,29 @@ const callAPI = (endpoint, method, params, type) => {
   };
 };
 
+export function createQuery(key, since, until, extra) {
+  const extraOrEmpty = extra || [];
+  return es.bool([es.dateRange(key, since, until), ...extraOrEmpty]);
+}
+
+export function createSort(orderingKey, descending) {
+  return es.sort([{key: orderingKey, descending}]);
+}
+
 // Section: scraping posts.
 export function getPost(postId, handler) {
   return sendRequest(`/api/dashboard/scrape/post/${postId}`, 'GET', null, handler);
 }
 
-export function getPosts(pageNumber, pageSize, since, until, orderingKey, descending) {
-  return callAPI('/api/dashboard/scrape/post/all', 'GET', {pageNumber, pageSize, since, until, orderingKey, descending}, GET_POSTS_DONE);
+export function getPosts(pageNumber, pageSize, since, until, pages, orderingKey, descending) {
+  const extra = pages ? [es.terms('page.facebookId', pages)] : [];
+  const query = createQuery('created_time', since, until, extra);
+  const sort = createSort(orderingKey || 'created_time', descending);
+  return callAPI('/api/dashboard/scrape/post/all', 'POST', {pageNumber, pageSize, query, sort}, GET_POSTS_DONE);
 }
 
 export function getPostComments(postId, pageNumber, pageSize) {
-  return callAPI(`/api/dashboard/scrape/comment/post/${postId}`, 'GET', {postId, pageNumber, pageSize}, GET_COMMENTS_DONE);
+  return callAPI(`/api/dashboard/scrape/comment/post/${postId}`, 'POST', {postId, pageNumber, pageSize}, GET_COMMENTS_DONE);
 }
 
 export function scrapePosts(since, until) {
@@ -134,12 +147,13 @@ export function scrapePosts(since, until) {
 }
 
 export function exportPosts(contentType, since, until, handler) {
-  return sendRequest(`/api/dashboard/scrape/post/export/${contentType}`, 'GET', {since, until}, null, handler);
+  return sendRequest(`/api/dashboard/scrape/post/export/${contentType}`, 'POST', {since, until}, null, handler);
 }
 
 // Section: post scraping history.
 export function getPostScrapes(pageNumber, pageSize, since, until) {
-  return callAPI('/api/dashboard/scrape/post/history/all', 'GET', {pageNumber, pageSize, since, until}, GET_SCRAPED_POSTS_DONE);
+  const query = createQuery('importStart', since, until);
+  return callAPI('/api/dashboard/scrape/post/history/all', 'POST', {pageNumber, pageSize, query}, GET_SCRAPED_POSTS_DONE);
 }
 
 export function getPostScrape(scrapeId, handler) {
@@ -148,11 +162,13 @@ export function getPostScrape(scrapeId, handler) {
 
 // Section: scraping comments.
 export function getComments(pageNumber, pageSize, since, until, orderingKey, descending) {
-  return callAPI('/api/dashboard/scrape/comment/all', 'GET', {pageNumber, pageSize, since, until, orderingKey, descending}, GET_COMMENTS_DONE);
+  const query = createQuery('created_time', since, until);
+  const sort = createSort(orderingKey || 'created_time', descending);
+  return callAPI('/api/dashboard/scrape/comment/all', 'POST', {pageNumber, pageSize, query, sort}, GET_COMMENTS_DONE);
 }
 
 export function exportComments(contentType, since, until, handler) {
-  return sendRequest(`/api/dashboard/scrape/comment/export/${contentType}`, 'GET', {since, until}, null, handler);
+  return sendRequest(`/api/dashboard/scrape/comment/export/${contentType}`, 'POST', {since, until}, null, handler);
 }
 
 // Section: pages to scrape.
@@ -177,7 +193,8 @@ export function deletePage(id) {
 }
 
 export function getPages(pageNumber, pageSize, since, until) {
-  return callAPI('/api/dashboard/page/all', 'GET', {pageNumber, pageSize, since, until}, GET_PAGES_DONE);
+  const query = createQuery('created', since, until);
+  return callAPI('/api/dashboard/page/all', 'POST', {pageNumber, pageSize, query}, GET_PAGES_DONE);
 }
 
 // Section: scraping pages.
@@ -186,12 +203,13 @@ export function scrapePages(pages) {
 }
 
 export function exportPages(contentType, since, until, handler) {
-  return sendRequest(`/api/dashboard/scrape/page/history/export/${contentType}`, 'GET', {since, until}, null, handler);
+  return sendRequest(`/api/dashboard/scrape/page/history/export/${contentType}`, 'POST', {since, until}, null, handler);
 }
 
 // Section: page scraping history.
 export function getPageScrapes(pageNumber, pageSize, since, until) {
-  return callAPI('/api/dashboard/scrape/page/history/all', 'GET', {pageNumber, pageSize, since, until}, GET_SCRAPED_PAGES_DONE);
+  const query = createQuery('importStart', since, until);
+  return callAPI('/api/dashboard/scrape/page/history/all', 'POST', {pageNumber, pageSize, query}, GET_SCRAPED_PAGES_DONE);
 }
 
 export function getPageScrape(scrapeId, handler) {

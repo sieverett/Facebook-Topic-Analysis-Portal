@@ -13,6 +13,7 @@ using FacebookCivicInsights.Data.Scraper;
 using FacebookCivicInsights.Data.Importer;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Nest;
 
 namespace FacebookCivicInsights.Controllers.Dashboard
 {
@@ -37,28 +38,25 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         [HttpGet("{id}")]
         public ScrapedPost GetPost(string id) => PostScraper.Get(id);
 
-        [HttpGet("all")]
-        public PagedResponse<ScrapedPost> AllPosts(int pageNumber, int pageSize, string orderingKey, bool? descending, DateTime? since, DateTime? until)
+        [HttpPost("all")]
+        public PagedResponse<ScrapedPost> AllPosts([FromBody]ElasticSearchRequest request)
         {
-            return PostScraper.All<TimeSearchResponse<ScrapedPost>, ScrapedPost>(
-                new PagedResponse(pageNumber, pageSize),
-                new Ordering<ScrapedPost>(orderingKey ?? "created_time", descending),
-                p => p.CreatedTime, since, until);
+            return PostScraper.Paged(request.PageNumber, request.PageSize, request.Query, request.Sort);
         }
 
-        [HttpGet("export/csv")]
-        public IActionResult ExportAsCSV(bool? descending, DateTime? since, DateTime? until)
+        [HttpPost("export/csv")]
+        public IActionResult ExportAsCSV([FromBody]ElasticSearchRequest request)
         {
-            IEnumerable<ScrapedPost> history = AllPosts(0, int.MaxValue, null, descending, since, until).AllData();
+            IEnumerable<ScrapedPost> history = PostScraper.All(request.Query, request.Sort).Data;
 
             byte[] serialized = CsvSerialization.Serialize(history, CsvSerialization.MapPost);
             return File(serialized, "text/csv", "export.csv");
         }
 
-        [HttpGet("export/json")]
-        public IActionResult ExportAsJson(bool? descending, DateTime? since, DateTime? until)
+        [HttpPost("export/json")]
+        public IActionResult ExportAsJson([FromBody]ElasticSearchRequest request)
         {
-            IEnumerable<ScrapedPost> history = AllPosts(0, int.MaxValue, null, descending, since, until).AllData();
+            IEnumerable<ScrapedPost> history = PostScraper.All(request.Query, request.Sort).Data;
 
             byte[] serialized = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(history));
             return File(serialized, "application/json-download", "export.json");
@@ -81,7 +79,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
             PageMetadata[] pages;
             if (request.Pages == null)
             {
-                pages = PageMetadataRepository.Paged().AllData().ToArray();
+                pages = PageMetadataRepository.All().Data.ToArray();
             }
             else
             {
@@ -145,13 +143,10 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         [HttpGet("history/{id}")]
         public PostScrapeHistory GetScrape(string id) => PostScrapeHistoryRepository.Get(id);
 
-        [HttpGet("history/all")]
-        public PagedResponse AllScrapes(int pageNumber, int pageSize, bool? descending, DateTime? since, DateTime? until)
+        [HttpPost("history/all")]
+        public PagedResponse AllScrapes(ElasticSearchRequest request)
         {
-            return PostScrapeHistoryRepository.All<TimeSearchResponse<PostScrapeHistory>, PostScrapeHistory>(
-                new PagedResponse(pageNumber, pageSize),
-                new Ordering<PostScrapeHistory>("importStart", descending),
-                p => p.ImportStart, since, until);
+            return PostScrapeHistoryRepository.Paged(request.PageNumber, request.PageSize, request.Query, request.Sort);
         }
 
         [HttpGet("and_so_it_begins")]
@@ -159,25 +154,23 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         {
             const int LastScrapeAmount = 0;
             int i = 0;
-            ElasticSearchPagedResponse<ScrapedPost> paged = PostScraper.Paged(new PagedResponse(0, int.MaxValue), new Ordering<ScrapedPost>("created_time", true));
-            foreach (ElasticSearchPagedResponse<ScrapedPost> response in paged.AllPages())
+
+            AllResponse<ScrapedPost> posts = PostScraper.All(new SortField[] { new SortField { Field = "created_time", Order = SortOrder.Descending } });
+            foreach (ScrapedPost post in posts.Data)
             {
-                foreach (ScrapedPost post in response.Data)
+                i++;
+                if (post.CreatedTime < new DateTime(2017, 04, 01))
                 {
-                    i++;
-                    if (post.CreatedTime < new DateTime(2017, 04, 01))
-                    {
-                        continue;
-                    }
-                    if (i > LastScrapeAmount)
-                    {
-                        List<ScrapedComment> comments = CommentScraper.Scrape(post).ToList();
-                        Console.WriteLine($"{i}/{response.TotalCount}: {post.Id}; {comments.Count}");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"{i}/{response.TotalCount}: {post.Id}; Already scraped.");
-                    }
+                    continue;
+                }
+                if (i > LastScrapeAmount)
+                {
+                    List<ScrapedComment> comments = CommentScraper.Scrape(post).ToList();
+                    Console.WriteLine($"{i}/{posts.TotalCount}: {post.Id}; {comments.Count}");
+                }
+                else
+                {
+                    Console.WriteLine($"{i}/{posts.TotalCount}: {post.Id}; Already scraped.");
                 }
             }
         }

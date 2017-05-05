@@ -7,6 +7,7 @@ using Facebook.Requests;
 using FacebookCivicInsights.Data;
 using FacebookCivicInsights.Models;
 using Microsoft.AspNetCore.Mvc;
+using Nest;
 
 namespace FacebookCivicInsights.Controllers.Dashboard
 {
@@ -50,7 +51,8 @@ namespace FacebookCivicInsights.Controllers.Dashboard
 
             // If the page doesn't already exist, save it.
             Page facebookPage = VerifyFacebookPage(page.FacebookId);
-            if (PageRepository.Paged(search: q => q.Term("facebookId", page.FacebookId)).Data.Any())
+
+            if (GetPage(page.FacebookId) != null)
             {
                 throw new InvalidOperationException($"Page {page.FacebookId} already exists.");
             }
@@ -81,11 +83,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
             }
 
             // Page doesn't exist, find it by the facebook Id.
-            PageMetadata pageByFacebookId = PageRepository.Paged(search: q =>
-            {
-                return q.Match(m => m.Field(p => p.FacebookId).Query(id));
-            }).Data.FirstOrDefault();
-            return pageByFacebookId;
+            return GetPage(id);
         }
 
         [HttpPatch("{id}")]
@@ -108,13 +106,10 @@ namespace FacebookCivicInsights.Controllers.Dashboard
             return PageRepository.Save(page);
         }
 
-        [HttpGet("all")]
-        public PagedResponse AllPages(int pageNumber, int pageSize, DateTime? since, DateTime? until)
+        [HttpPost("all")]
+        public PagedResponse AllPages([FromBody]ElasticSearchRequest request)
         {
-            PagedResponse<PageMetadata> response =  PageRepository.All<TimeSearchResponse<PageMetadata>, PageMetadata>(
-                new PagedResponse(pageNumber, pageSize),
-                new Ordering<PageMetadata>("created", null),
-                p => p.Created, since, until);
+            PagedResponse<PageMetadata> response = PageRepository.Paged(request.PageNumber, request.PageSize, request.Query, request.Sort);
             response.Data = response.Data.OrderBy(p => p.Name);
             return response;
         }
@@ -132,6 +127,16 @@ namespace FacebookCivicInsights.Controllers.Dashboard
             }
 
             return page;
+        }
+
+        private PageMetadata GetPage(string facebookId)
+        {
+            var query = new QueryContainer(new TermQuery
+            {
+                Field = "facebookId",
+                Value = facebookId
+            });
+            return PageRepository.All(query).Data.FirstOrDefault();
         }
     }
 }

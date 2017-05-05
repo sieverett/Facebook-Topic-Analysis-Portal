@@ -55,13 +55,25 @@ namespace FacebookCivicInsights.Data.Scraper
         public ScrapedPage Closest(Expression<Func<ScrapedPage, string>> field, string query, DateTime date)
         {
             // Get all the pages with the display name within +- 1 week of the specified date.
-            IEnumerable<ScrapedPage> pages = Paged(search: q =>
+            IQueryContainer search = new QueryContainer(new BoolQuery
             {
-                return q.Match(m => m.Field(field).Query(query)) && q.DateRange(d =>
+                Must = new QueryContainer[]
                 {
-                    return d.Field("date").LessThanOrEquals(date.AddDays(4)).GreaterThanOrEquals(date.AddDays(-4));
-                });
-            }).Data.Where(p => field.Compile()(p) == query);
+                    new MatchQuery
+                    {
+                        Field = field,
+                        Query = query
+                    },
+                    new DateRangeQuery
+                    {
+                        Field = "date",
+                        LessThanOrEqualTo = date.AddDays(4),
+                        GreaterThanOrEqualTo = date.AddDays(-4)
+                    }
+                }
+            });
+                
+            IEnumerable<ScrapedPage> pages = All(search).Data.Where(p => field.Compile()(p) == query);
 
             // Get the closest date to the specified date.
             IEnumerable<ScrapedPage> closestPages = pages.OrderBy(p => (p.Date - date).Duration());

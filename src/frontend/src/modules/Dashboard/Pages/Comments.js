@@ -15,9 +15,9 @@ class Comments extends Component {
   componentWillMount = () => this.getComments();
 
   getComments = (newPageNumber, newPageSize, newSince, newUntil, newOrderingKey, newOrderingDescending) => {
-    const { pageNumber, pageSize, since, until, ordering } = this.context.store.getState().comments;
-    const orderingKey = newOrderingDescending === undefined && ordering ? ordering.key : newOrderingKey;
-    const descending = newOrderingDescending === undefined && ordering ? ordering.descending : newOrderingDescending;
+    const { pageNumber, pageSize, since, until, sort } = this.context.store.getState().comments;
+    const orderingKey = newOrderingDescending === undefined && sort ? sort[0].field : newOrderingKey;
+    const descending = newOrderingDescending === undefined && sort ? sort[0].order === 'desc' : newOrderingDescending;
     this.context.store.dispatch(getComments(newPageNumber || pageNumber, newPageSize || pageSize, newSince || since, newUntil || until, orderingKey, descending));
   }
   
@@ -48,7 +48,7 @@ class Comments extends Component {
               onPageNumberChanged={pageNumber => this.getComments(pageNumber, null)} />;
   }
   
-  table = (posts) => {
+  table = (comments) => {
     const mapping = [
       {name: 'Page',         key: comment => <a href={`pages/${comment.post.from.id}`}>{comment.post.from.name}</a>                                                            },
       {name: 'From',         key: comment => <a href={`https://facebook.com/${comment.from.id}`}>{comment.from.name}</a>                                                       },
@@ -60,9 +60,9 @@ class Comments extends Component {
 
     return (
       <Panel showHeading={false} table={true}>
-        <DataTable mapping={mapping} data={posts.data} startIndex={posts.startItemIndex + 1} minSize={12}
+        <DataTable mapping={mapping} data={comments.data} startIndex={comments.startItemIndex + 1} minSize={12}
                    onRowSelected={this.handleRowSelection}
-                   orderingKey={posts.ordering.key} orderDescending={posts.ordering.descending} onOrderingChanged={this.handleOrderingChanged} />
+                   orderingKey={comments.sort[0].field} orderDescending={comments.sort[0].order === 'desc'} onOrderingChanged={this.handleOrderingChanged} />
       </Panel>
     );
   }

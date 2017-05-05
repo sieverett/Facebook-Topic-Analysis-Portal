@@ -33,18 +33,18 @@ class PageSelectionList extends Component {
   }
 
   handlePanelClicked = () => this.state.selectedRows.length === 0 ? this.selectAll() : this.setState({selectedRows: []});
-  selectAll = () => this.setState({selectedRows: this.context.store.getState().pages.data.map(p => p.id)});
+  selectAll = () => this.setState({selectedRows: this.context.store.getState().pages.data});
 
-  isRowSelected = (data, index) => this.state.selectedRows.includes(data.id);
+  isRowSelected = (page, index) => this.state.selectedRows.findIndex(p => p.id === page.id) !== -1;
 
-  handleRowSelection = (data, index) => {
-    if (this.isRowSelected(data)) {
+  handleRowSelection = (page, index) => {
+    if (this.isRowSelected(page)) {
       // Selected: remove from the list of selected rows.
-      const rowsWithoutSelection = this.state.selectedRows.filter(p => p !== data.id);
+      const rowsWithoutSelection = this.state.selectedRows.filter(p => p.id !== page.id);
       this.setState({selectedRows: rowsWithoutSelection});
     } else {
       // Not selected: add to the list of selected rows.
-      const rowsWithSelection = this.state.selectedRows.concat([data.id]);
+      const rowsWithSelection = this.state.selectedRows.concat([page]);
       this.setState({selectedRows: rowsWithSelection});
     }
   }
@@ -67,9 +67,11 @@ class PageSelectionList extends Component {
     // If nothing is selected, show a "Select All" button. Else show a "Clear" button.
     const panelButtonTitle = this.state.selectedRows.length === 0 ? 'All' : 'Clear';
     const panelHeading = <PanelHeading title={this.props.title} buttonTitle={panelButtonTitle} onClick={this.handlePanelClicked} />;
+    
+    const className = (this.props.className || '') + ' pages-list';
 
     return (
-      <Panel className={this.props.className || ''} table heading={panelHeading}>
+      <Panel className={className} table heading={panelHeading}>
         <form onSubmit={this.handleSubmit}>
           <div className="form-group">
             {this.pageList()}

@@ -31,13 +31,10 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         [HttpGet("{id}")]
         public ScrapedPage GetScrape(string id) => PageScraper.Get(id);
 
-        [HttpGet("all")]
-        public PagedResponse AllScrapes(int pageNumber, int pageSize, bool? descending, DateTime? since, DateTime? until)
+        [HttpPost("all")]
+        public PagedResponse AllScrapes([FromBody]ElasticSearchRequest request)
         {
-            return PageScraper.All<TimeSearchResponse<ScrapedPage>, ScrapedPage>(
-                new PagedResponse(pageNumber, pageSize),
-                new Ordering<ScrapedPage>("date", descending),
-                p => p.Date, since, until);
+            return PageScraper.Paged(request.PageNumber, request.PageSize, request.Query, request.Sort);
         }
 
         [HttpPost("scrape")]
@@ -47,7 +44,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
             PageMetadata[] pagesToScrape;
             if (request == null)
             {
-                pagesToScrape = PageMetadataRepository.Paged().AllData().ToArray();
+                pagesToScrape = PageMetadataRepository.All().Data.ToArray();
             }
             else
             {
@@ -98,29 +95,25 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         [HttpGet("history/{id}")]
         public PageScrapeHistory GetScrapeHistory(string id) => PageScrapeHistoryRepository.Get(id);
 
-        [HttpGet("history/all")]
-        public PagedResponse<PageScrapeHistory> AllScrapeHistory(int pageNumber, int pageSize, bool? descending, DateTime? since, DateTime? until)
+        [HttpPost("history/all")]
+        public PagedResponse<PageScrapeHistory> AllScrapeHistory([FromBody]ElasticSearchRequest request)
         {
-            return PageScrapeHistoryRepository.All<TimeSearchResponse<PageScrapeHistory>, PageScrapeHistory>(
-                new PagedResponse(pageNumber, pageSize),
-                new Ordering<PageScrapeHistory>("importStart", descending),
-                p => p.ImportStart, since, until
-            );
+            return PageScrapeHistoryRepository.Paged(request.PageNumber, request.PageSize, request.Query, request.Sort);
         }
 
-        [HttpGet("history/export/csv")]
-        public IActionResult ExportPagesAsCSV(bool? descending, DateTime? since, DateTime? until)
+        [HttpPost("history/export/csv")]
+        public IActionResult ExportPagesAsCSV([FromBody]ElasticSearchRequest request)
         {
-            IEnumerable<PageScrapeHistory> history = AllScrapeHistory(0, int.MaxValue, descending, since, until).AllData();
+            IEnumerable<PageScrapeHistory> history = PageScrapeHistoryRepository.All(request.Query, request.Sort).Data;
 
             byte[] serialized = CsvSerialization.Serialize(history, CsvSerialization.MapPageScrape);
             return File(serialized, "text/csv", "export.csv");
         }
 
-        [HttpGet("history/export/json")]
-        public IActionResult ExportPagesAsJson(bool? descending, DateTime? since, DateTime? until)
+        [HttpPost("history/export/json")]
+        public IActionResult ExportPagesAsJson([FromBody]ElasticSearchRequest request)
         {
-            IEnumerable<PageScrapeHistory> history = AllScrapeHistory(0, int.MaxValue, descending, since, until).AllData();
+            IEnumerable<PageScrapeHistory> history = PageScrapeHistoryRepository.All(request.Query, request.Sort).Data;
 
             byte[] serialized = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(history));
             return File(serialized, "application/json-download", "export.json");

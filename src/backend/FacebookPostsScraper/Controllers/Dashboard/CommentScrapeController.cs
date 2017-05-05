@@ -6,7 +6,6 @@ using FacebookCivicInsights.Data;
 using FacebookCivicInsights.Models;
 using FacebookCivicInsights.Data.Scraper;
 using Microsoft.AspNetCore.Mvc;
-using Nest;
 using Newtonsoft.Json;
 
 namespace FacebookCivicInsights.Controllers.Dashboard
@@ -26,38 +25,25 @@ namespace FacebookCivicInsights.Controllers.Dashboard
         [HttpGet("{id}")]
         public ScrapedComment GetComment(string id) => CommentScraper.Get(id);
 
-        [HttpGet("post/{postId}")]
-        public PagedResponse AllCommentsForPage(string postId, int pageNumber, int pageSize, bool? descending)
+        [HttpPost("all")]
+        public PagedResponse<ScrapedComment> AllComments([FromBody]ElasticSearchRequest request)
         {
-            Func<QueryContainerDescriptor<ScrapedComment>, QueryContainer> search = q => q.Term(t => t.Field(c => c.Post.Id).Value(postId));
-            return CommentScraper.Paged<TimeSearchResponse<ScrapedComment>>(
-                new PagedResponse(pageNumber, pageSize),
-                new Ordering<ScrapedComment>("created_time", descending),
-                search);
+            return CommentScraper.Paged(request.PageNumber, request.PageSize, request.Query, request.Sort);
         }
 
-        [HttpGet("all")]
-        public PagedResponse<ScrapedComment> AllComments(int pageNumber, int pageSize, string orderingKey, bool? descending, DateTime? since, DateTime? until)
+        [HttpPost("export/csv")]
+        public IActionResult ExportAsCSV([FromBody]ElasticSearchRequest request)
         {
-            return CommentScraper.All<TimeSearchResponse<ScrapedComment>, ScrapedComment>(
-                new PagedResponse(pageNumber, pageSize),
-                new Ordering<ScrapedComment>(orderingKey ?? "created_time", descending),
-                p => p.CreatedTime, since, until);
-        }
-
-        [HttpGet("export/csv")]
-        public IActionResult ExportAsCSV(bool? descending, DateTime? since, DateTime? until)
-        {
-            IEnumerable<ScrapedComment> history = AllComments(0, int.MaxValue, null, descending, since, until).AllData();
+            IEnumerable<ScrapedComment> history = CommentScraper.All(request.Query, request.Sort).Data;
 
             byte[] serialized = CsvSerialization.Serialize(history, CsvSerialization.MapComment);
             return File(serialized, "text/csv", "export.csv");
         }
 
-        [HttpGet("export/json")]
-        public IActionResult ExportAsJson(bool? descending, DateTime? since, DateTime? until)
+        [HttpPost("export/json")]
+        public IActionResult ExportAsJson([FromBody]ElasticSearchRequest request)
         {
-            IEnumerable<ScrapedComment> history = AllComments(0, int.MaxValue, null, descending, since, until).AllData();
+            IEnumerable<ScrapedComment> history = CommentScraper.All(request.Query, request.Sort).Data;
 
             byte[] serialized = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(history));
             return File(serialized, "application/json-download", "export.json");

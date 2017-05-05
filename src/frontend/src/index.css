@@ -291,3 +291,18 @@ body {
 .selectable-well a:focus {
     text-decoration: none;
 }
+
+.posts-list .pages-list,
+.posts-list .posts-container {
+    transition: width 0.4s linear;
+}
+
+.slide-in-hidden {
+    width: 0px;
+    overflow: hidden;
+    padding: 0;
+}
+
+.slide-in-visible {
+    padding: 0px 0px;
+}

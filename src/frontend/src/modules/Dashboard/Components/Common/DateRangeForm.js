@@ -108,6 +108,9 @@ class DateRangeForm extends Component {
         <div className="btn-group">
           <DateDropdown title={this.props.lowerName} onUserInput={this.updateSince} />
           <DateDropdown title={this.props.upperName} onUserInput={this.updateUntil} />
+          {this.props.filterTitle &&
+          <a href="#" className="btn btn-default btn-lg" onClick={e => {e.preventDefault(); this.props.onFilterClicked()}}>{this.props.filterTitle}</a>
+          }
         </div>
         <div className="btn-group">
           <input type="submit" className="btn btn-primary btn-lg" value={this.props.action} />
@@ -123,7 +126,7 @@ class DateRangeForm extends Component {
           </div>
           {this.extraButtons()}
         </div>
-        <Modal id="date-form-modal" title="Cannot scrape">{this.state.errorMessage}</Modal>
+        <Modal id="date-form-modal" title="Invalid range">{this.state.errorMessage}</Modal>
       </form>
     );
   }
