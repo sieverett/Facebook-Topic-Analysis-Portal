@@ -6,22 +6,19 @@ import Panel from '../Components/Common/Panel';
 import TextWell from '../Components/Common/Well/TextWell';
 import DateWell from '../Components/Common/Well/DateWell';
 
-class PostMessage extends Component {
-  render() {
-    const { post } = this.props;
-    return (
-      <div className="panel panel-default">
-        <div className="panel-heading">
-          <strong>{post.page.name}</strong>
-          <span className="pull-right">{post.type}</span>
-        </div>
-        <div className="panel-body"><span className='display-whitespace'>{post.message}</span></div>
-        <div className="panel-footer">
-          <a href={post.permalink_url}>{post.permalink_url}</a>
-        </div>
+function PostMessage(props) {
+  return (
+    <div className="panel panel-default">
+      <div className="panel-heading">
+        <strong>{props.post.page.name}</strong>
+        <span className="pull-right">{props.post.type}</span>
       </div>
-    );
-  }
+      <div className="panel-body"><span className='display-whitespace'>{props.post.message}</span></div>
+      <div className="panel-footer">
+        <a href={props.post.permalink_url}>{props.post.permalink_url}</a>
+      </div>
+    </div>
+  );
 }
 
 class PostInformation extends Component {
