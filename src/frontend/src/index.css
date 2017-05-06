@@ -292,12 +292,12 @@ body {
     text-decoration: none;
 }
 
-.posts-list .pages-list,
-.posts-list .posts-container {
+.page-filtered-list .pages-list,
+.page-filtered-list .table-container {
     transition: width 0.4s linear;
 }
 
-.posts-list .pages-list {
+.page-filtered-list .pages-list {
     padding-top: 20px;
 }
 

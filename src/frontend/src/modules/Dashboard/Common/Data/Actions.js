@@ -164,14 +164,16 @@ export function getPostScrape(scrapeId, handler) {
 }
 
 // Section: scraping comments.
-export function getComments(pageNumber, pageSize, since, until, orderingKey, descending) {
-  const query = createQuery('created_time', since, until);
+export function getComments(pageNumber, pageSize, since, until, pages, orderingKey, descending) {
+  const extra = pages ? [es.terms('post.page.facebookId', pages)] : [];
+  const query = createQuery('created_time', since, until, extra);
   const sort = createSort(orderingKey || 'created_time', descending);
   return callAPI('/api/dashboard/scrape/comment/all', 'POST', {pageNumber, pageSize, query, sort}, GET_COMMENTS_DONE);
 }
 
-export function exportComments(contentType, since, until, handler) {
-  const query = createQuery('created_time', since, until);
+export function exportComments(contentType, since, until, pages, handler) {
+  const extra = pages ? [es.terms('post.page.facebookId', pages)] : [];
+  const query = createQuery('created_time', since, until, extra);
   const sort = createSort('created_time', true);
   return sendRequest(`/api/dashboard/scrape/comment/export/${contentType}`, 'POST', {query, sort}, null, handler);
 }

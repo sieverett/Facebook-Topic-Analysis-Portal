@@ -92,7 +92,7 @@ class Posts extends Component {
     );
   }
 
-  pagesList = (pages) => {
+  pagesList = () => {
     const pagesListClassName = 'col-md-3 ' + (this.state.filterPagesListVisible ? 'slide-in-visible' : 'slide-in-hidden');
     return <PageSelectionList title="Filter" className={pagesListClassName} onSubmit={this.handleFilterPages} />
   }
@@ -105,12 +105,12 @@ class Posts extends Component {
       return <LoadingIndicator />
     }
  
-    const tableContainerClassName = 'posts-container ' + (this.state.filterPagesListVisible ? 'col-md-9 ' : 'col-md-12');
+    const tableContainerClassName = 'table-container ' + (this.state.filterPagesListVisible ? 'col-md-9 ' : 'col-md-12');
 
     return (
       <div>
         {this.export()}
-        <div className="posts-list">
+        <div className="page-filtered-list">
           {this.pagesList()}
           <div className={tableContainerClassName}>
             {this.heading(posts)}

@@ -7,6 +7,7 @@ import ErrorPanel from '../Components/Common/ErrorPanel';
 import LoadingIndicator from '../Components/Common/LoadingIndicator';
 import Panel from '../Components/Common/Panel';
 import DateRangeForm from '../Components/Common/DateRangeForm';
+import PageSelectionList from '../Components/Common/PageSelectionList';
 
 class Comments extends Component {
   state = {}
@@ -14,10 +15,11 @@ class Comments extends Component {
   // Load the up-to-date list of posts each time the page is refreshed or loaded.
   componentWillMount = () => this.getComments();
 
-  getComments = (newPageNumber, newPageSize, newSince, newUntil, newOrderingKey, newOrderingDescending) => {
+  getComments = (newPageNumber, newPageSize, newSince, newUntil, newPages, newOrderingKey, newOrderingDescending) => {
     const { pageNumber, pageSize, sort } = this.context.store.getState().comments;
     const since = newSince || this.state.since;
     const until = newUntil || this.state.until;
+    const pages = newPages || this.state.pages;
 
     const orderingKey = newOrderingDescending === undefined && sort ? sort[0].field : newOrderingKey;
     const descending = newOrderingDescending === undefined && sort ? sort[0].order === 'desc' : newOrderingDescending;
@@ -26,18 +28,25 @@ class Comments extends Component {
       newPageSize || pageSize,
       newSince || since,
       newUntil || until,
+      pages,
       orderingKey,
       descending
     ));
     
-    this.setState({since, until});
+    this.setState({pages, since, until});
   }
-  
-  handleExport = (contentType, since, until) => exportComments(contentType, since, until, (_, errorMessage) => {});
+
+  handleExport = (contentType, since, until) => {
+    exportComments(contentType, since, until, this.state.pages, (_, errorMessage) => {});
+  }
 
   handleRowSelection = (data, index) => window.location.href += `/../posts/${data.post.id}`;
 
   handleOrderingChanged = (orderingKey, descending) => this.getComments(null, null, null, null, orderingKey, descending);
+
+  toggleFilterPages = () => this.setState({filterPagesListVisible: !this.state.filterPagesListVisible});
+
+  handleFilterPages = (pages) => this.getComments(null, null, null, null, pages.map(p => p.facebookId));
 
   export = () => {
     const extraButtonActions = [
@@ -47,8 +56,10 @@ class Comments extends Component {
 
     const { since, until } = this.context.store.getState().comments;
     return (
+      
       <Panel showHeading={false} className="sub-header">
-        <DateRangeForm action="Browse" onSubmit={(since, until) => this.getComments(null, null, since, until)} extraButtonActions={extraButtonActions}
+        <DateRangeForm action="Browse" onSubmit={(since, until) => this.getComments(null, null, since, until)}
+                       filterTitle="Filter Pages" onFilterClicked={this.toggleFilterPages} extraButtonActions={extraButtonActions}
                        since={since} lowerName="From" until={until} upperName="To" allowEmpty={true} />
       </Panel>
     );
@@ -79,6 +90,11 @@ class Comments extends Component {
     );
   }
 
+  pagesList = () => {
+    const pagesListClassName = 'col-md-3 ' + (this.state.filterPagesListVisible ? 'slide-in-visible' : 'slide-in-hidden');
+    return <PageSelectionList title="Filter" className={pagesListClassName} onSubmit={this.handleFilterPages} />
+  }
+
   render() {
     const { comments, errorMessage } = this.context.store.getState();
     if (errorMessage) {
@@ -86,12 +102,19 @@ class Comments extends Component {
     } else if (!comments.data) {
       return <LoadingIndicator />
     }
+    
+    const tableContainerClassName = 'table-container ' + (this.state.filterPagesListVisible ? 'col-md-9 ' : 'col-md-12');
 
     return (
       <div>
         {this.export()}
-        {this.heading(comments)}
-        {this.table(comments)}
+        <div className="page-filtered-list">
+          {this.pagesList()}
+          <div className={tableContainerClassName}>
+            {this.heading(comments)}
+            {this.table(comments)}
+          </div>
+        </div>
       </div>
     );
   }
