@@ -208,7 +208,9 @@ export function scrapePages(pages) {
 }
 
 export function exportPages(contentType, since, until, handler) {
-  return sendRequest(`/api/dashboard/scrape/page/history/export/${contentType}`, 'POST', {since, until}, null, handler);
+  const query = createQuery('importStart', since, until);
+  const sort = createSort('importStart', true);
+  return sendRequest(`/api/dashboard/scrape/page/history/export/${contentType}`, 'POST', {query, sort}, null, handler);
 }
 
 // Section: page scraping history.
