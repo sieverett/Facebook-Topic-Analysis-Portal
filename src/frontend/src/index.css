@@ -297,12 +297,18 @@ body {
     transition: width 0.4s linear;
 }
 
+.pages-list {
+    padding-top: 20px;
+}
+
 .slide-in-hidden {
     width: 0px;
     overflow: hidden;
-    padding: 0;
+    padding-left: 0px;
+    padding-right: 0px;
 }
 
 .slide-in-visible {
-    padding: 0px 0px;
+    padding-left: 0px;
+    padding-right: 0px;
 }
