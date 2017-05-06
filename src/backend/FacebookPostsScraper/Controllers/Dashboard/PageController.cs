@@ -79,7 +79,7 @@ namespace FacebookCivicInsights.Controllers.Dashboard
             PageMetadata page = PageRepository.Get(id);
             if (page != null)
             {
-                return null;
+                return page;
             }
 
             // Page doesn't exist, find it by the facebook Id.

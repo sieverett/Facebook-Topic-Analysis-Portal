@@ -72,7 +72,7 @@ class Posts extends Component {
   
   table = (posts) => {
     const mapping = [
-      {name: 'Page Id',      key: post => post.page.name                                                                        },
+      {name: 'Page Id',      key: post => <a href={`pages/${post.page.name}`}>{post.page.name}</a>                           },
       {name: 'Created Time', key: post => showDate(post.created_time),              orderingKey: 'created_time'                 },
       {name: 'Type',         key: post => post.type                                                                             },
       {name: 'Message',      key: post => post.message                                                                          },
