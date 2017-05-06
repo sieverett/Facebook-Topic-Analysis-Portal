@@ -54,8 +54,6 @@ services:
       LS_JAVA_OPTS: "-Xmx256m -Xms256m"
     networks:
       - elk
-    depends_on:
-      - elasticsearch
 
 networks:
   elk:
