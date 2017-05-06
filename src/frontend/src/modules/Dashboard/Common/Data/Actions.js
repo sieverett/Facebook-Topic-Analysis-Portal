@@ -171,7 +171,9 @@ export function getComments(pageNumber, pageSize, since, until, orderingKey, des
 }
 
 export function exportComments(contentType, since, until, handler) {
-  return sendRequest(`/api/dashboard/scrape/comment/export/${contentType}`, 'POST', {since, until}, null, handler);
+  const query = createQuery('created_time', since, until);
+  const sort = createSort('created_time', true);
+  return sendRequest(`/api/dashboard/scrape/comment/export/${contentType}`, 'POST', {query, sort}, null, handler);
 }
 
 // Section: pages to scrape.

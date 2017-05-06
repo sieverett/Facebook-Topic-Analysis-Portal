@@ -97,7 +97,6 @@ namespace FacebookCivicInsights.Data
                 From = from,
                 Size = pageSize
             });
-            string s  = Client.Serializer.SerializeToString(query);
             content.Data = searchResponse.Documents.ToArray();
             content.TotalCount = searchResponse.Total;
 
