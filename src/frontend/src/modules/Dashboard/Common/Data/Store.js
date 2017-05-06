@@ -92,7 +92,7 @@ const pageScrapes = (state={}, action) => {
   return state;
 };
 
-const error = (state = null, action) => {
+const errorMessage = (state = null, action) => {
   if (action.type === actions.ERROR_OCCURED) {
     return action.errorMessage;
   }
@@ -100,7 +100,7 @@ const error = (state = null, action) => {
   return state;
 }
 
-const reducer = combineReducers({posts, postScrapes, comments, pages, pageScrapes, error});
+const reducer = combineReducers({posts, postScrapes, comments, pages, pageScrapes, errorMessage});
 
 export const configureStore = () => {
   const store = compose(autoRehydrate(), applyMiddleware(thunk))(createStore)(reducer);
