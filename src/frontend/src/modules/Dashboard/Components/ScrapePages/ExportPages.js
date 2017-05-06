@@ -4,8 +4,8 @@ import DateRangeForm from '../Common/DateRangeForm';
 
 export default function ExportPages(props) {
   const extraButtonActions = [
-    {title: 'Export as CSV',  onClick: () => props.onExport('csv')  },
-    {title: 'Export as JSON', onClick: () => props.onExport('json') }
+    {title: 'Export as CSV',  onClick: (since, until) => props.onExport('csv', since, until)  },
+    {title: 'Export as JSON', onClick: (since, until) => props.onExport('json', since, until) }
   ];
 
   return (

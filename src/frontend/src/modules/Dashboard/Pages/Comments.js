@@ -40,12 +40,12 @@ class Comments extends Component {
   handleOrderingChanged = (orderingKey, descending) => this.getComments(null, null, null, null, orderingKey, descending);
 
   export = () => {
-    const { since, until } = this.context.store.getState().comments;
     const extraButtonActions = [
-      {title: 'Export as CSV',  onClick: () => this.handleExport('csv', since, until)  },
-      {title: 'Export as JSON', onClick: () => this.handleExport('json', since, until) }
+      {title: 'Export as CSV',  onClick: (since, until) => this.handleExport('csv', since, until)  },
+      {title: 'Export as JSON', onClick: (since, until) => this.handleExport('json', since, until) }
     ];
 
+    const { since, until } = this.context.store.getState().comments;
     return (
       <Panel showHeading={false} className="sub-header">
         <DateRangeForm action="Browse" onSubmit={(since, until) => this.getComments(null, null, since, until)} extraButtonActions={extraButtonActions}

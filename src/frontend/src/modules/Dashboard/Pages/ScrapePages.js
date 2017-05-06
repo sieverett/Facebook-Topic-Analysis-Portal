@@ -21,13 +21,13 @@ class ScrapePages extends Component {
   handleScrapePages = (pages) => this.context.store.dispatch(scrapePages(pages));
 
   render() {
-    const { pages, pageScrapes, errorMessage } = this.context.store.getState();
+    const { pageScrapes, errorMessage } = this.context.store.getState();
 
     return (
       <section>
         <PageSelectionList title="Scrape" className="col-md-4" onSubmit={this.handleScrapePages} />
         <section className="col-md-8">
-          <ExportPages onSubmit={(since, until) => this.getScrapes(null, null, since, until)} onExport={contentType => this.handleExport(contentType, pages.since, pages.until)} />
+          <ExportPages onSubmit={(since, until) => this.getScrapes(null, null, since, until)} onExport={this.handleExport} />
           <Panel showHeading={false} table={true}>
             <PageScrapeList scrapes={pageScrapes} errorMessage={errorMessage} onRowSelected={this.handlePageScrapeClicked} />
           </Panel>
