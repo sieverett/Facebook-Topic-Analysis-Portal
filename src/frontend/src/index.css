@@ -297,7 +297,7 @@ body {
     transition: width 0.4s linear;
 }
 
-.pages-list {
+.posts-list .pages-list {
     padding-top: 20px;
 }
 
