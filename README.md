@@ -1,4 +1,7 @@
-# TAF Facebook Scraper
+# Facebook Scraper
+Developed by TAF Cambodia 2015/16
+
+**Note:** Changes to FB API may require additional access privileges. 
 
 ## Running with Docker
 1. Install [Docker Toolbox](https://www.docker.com/products/docker-toolbox)
