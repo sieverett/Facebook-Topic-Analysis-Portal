@@ -1,6 +1,6 @@
 # Facebook-Topic-Analysis
 > End to End Scraper & Dashboard 
-Developed by TAF Cambodia 2015/16
+@taf @hugh @sieverett
 
 ## Description:
 Program provides a UI for a FB scraper, storage and retrieval 
